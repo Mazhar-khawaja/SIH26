@@ -1,0 +1,147 @@
+from typing import Any, Dict
+from uuid import uuid4
+
+from app.models.event_schema import UniversalEvent
+
+
+class Normalizer:
+    """
+    Converts parser-specific fields into the ULPF Universal Event Schema.
+    """
+
+    FIELD_MAPPINGS = {
+        "source_ip": [
+            "source_ip",
+            "src",
+            "sourceAddress",
+            "source_address",
+        ],
+        "destination_ip": [
+            "destination_ip",
+            "dst",
+            "destinationAddress",
+            "destination_address",
+        ],
+        "source_port": [
+            "source_port",
+            "sport",
+            "sourcePort",
+            "source_port_number",
+        ],
+        "destination_port": [
+            "destination_port",
+            "dport",
+            "dpt",
+            "destinationPort",
+            "destination_port_number",
+        ],
+        "action": [
+            "action",
+            "act",
+        ],
+        "protocol": [
+            "protocol",
+            "proto",
+        ],
+        "severity": [
+            "severity",
+            "sev",
+        ],
+        "timestamp": [
+            "timestamp",
+            "time",
+        ],
+        "event_type": [
+            "event_type",
+            "eventType",
+            "event_name",
+            "name",
+        ],
+    }
+
+    def _get_value(
+        self,
+        parsed_data: Dict[str, Any],
+        field_names: list[str],
+    ) -> Any:
+        """
+        Return the first available value from the supplied field names.
+        """
+        for field_name in field_names:
+            if field_name in parsed_data:
+                return parsed_data[field_name]
+
+        return None
+
+    def normalize(self, parsed_data: Dict[str, Any]) -> UniversalEvent:
+        """
+        Convert parser output into a UniversalEvent.
+        """
+
+        event_id = f"ULPF-{uuid4().hex[:12].upper()}"
+
+        normalized_data: Dict[str, Any] = {
+            "event_id": event_id,
+            "timestamp": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["timestamp"],
+            ),
+            "source": parsed_data.get("device_product")
+            or parsed_data.get("source"),
+            "source_type": parsed_data.get("source_type"),
+            "source_ip": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["source_ip"],
+            ),
+            "source_port": self._convert_port(
+                self._get_value(
+                    parsed_data,
+                    self.FIELD_MAPPINGS["source_port"],
+                )
+            ),
+            "destination_ip": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["destination_ip"],
+            ),
+            "destination_port": self._convert_port(
+                self._get_value(
+                    parsed_data,
+                    self.FIELD_MAPPINGS["destination_port"],
+                )
+            ),
+            "protocol": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["protocol"],
+            ),
+            "event_type": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["event_type"],
+            ),
+            "action": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["action"],
+            ),
+            "severity": self._get_value(
+                parsed_data,
+                self.FIELD_MAPPINGS["severity"],
+            ),
+            "raw_event": parsed_data.get("raw_event", ""),
+            "parser": parsed_data.get("parser")
+            or parsed_data.get("source_type"),
+            "parse_status": "success",
+        }
+
+        return UniversalEvent(**normalized_data)
+
+    @staticmethod
+    def _convert_port(value: Any) -> int | None:
+        """
+        Convert a port value to an integer when possible.
+        """
+        if value is None:
+            return None
+
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
