@@ -33,3 +33,8 @@ class UniversalEvent(BaseModel):
 
     parser: Optional[str] = None
     parse_status: str = "success"
+
+    # Tamper-Evident Log fields
+    integrity_hash: Optional[str] = None
+    previous_hash: Optional[str] = None
+    chain_hash: Optional[str] = None

@@ -8,8 +8,8 @@ class Database:
     """
     SQLite storage layer for ULPF.
 
-    Stores both the original raw event and its normalized
-    representation using the same Event ID.
+    Stores the original raw event, its normalized representation,
+    and tamper-evident integrity information.
     """
 
     def __init__(self, database_path: str = "data/ulpf.db") -> None:
@@ -43,6 +43,8 @@ class Database:
                     severity TEXT,
                     raw_event TEXT NOT NULL,
                     raw_hash TEXT,
+                    previous_hash TEXT,
+                    chain_hash TEXT,
                     parser TEXT,
                     parse_status TEXT,
                     quality_status TEXT,
@@ -54,14 +56,37 @@ class Database:
 
             connection.commit()
 
+            # Add tamper-evident columns to an existing database
+            # if they are missing.
+            columns = {
+                row[1]
+                for row in connection.execute(
+                    "PRAGMA table_info(events)"
+                ).fetchall()
+            }
+
+            if "previous_hash" not in columns:
+                connection.execute(
+                    "ALTER TABLE events ADD COLUMN previous_hash TEXT"
+                )
+
+            if "chain_hash" not in columns:
+                connection.execute(
+                    "ALTER TABLE events ADD COLUMN chain_hash TEXT"
+                )
+
+            connection.commit()
+
     def save_event(
         self,
         event: Dict[str, Any],
         raw_hash: str | None = None,
         quality: Dict[str, Any] | None = None,
+        previous_hash: str | None = None,
+        chain_hash: str | None = None,
     ) -> None:
         """
-        Store a normalized event and its original raw event.
+        Store a normalized event and its integrity information.
         """
 
         quality = quality or {}
@@ -84,12 +109,14 @@ class Database:
                     severity,
                     raw_event,
                     raw_hash,
+                    previous_hash,
+                    chain_hash,
                     parser,
                     parse_status,
                     quality_status,
                     quality_score
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event.get("event_id"),
@@ -106,6 +133,8 @@ class Database:
                     event.get("severity"),
                     event.get("raw_event"),
                     raw_hash,
+                    previous_hash,
+                    chain_hash,
                     event.get("parser"),
                     event.get("parse_status"),
                     quality.get("status"),
@@ -163,6 +192,27 @@ class Database:
 
             return int(row[0])
 
+    def get_latest_chain_hash(self) -> str | None:
+        """
+        Return the chain hash of the most recently stored event.
+        """
+
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT chain_hash
+                FROM events
+                WHERE chain_hash IS NOT NULL
+                ORDER BY created_at DESC, rowid DESC
+                LIMIT 1
+                """
+            ).fetchone()
+
+            if row is None:
+                return None
+
+            return row[0]
+
     def clear_events(self) -> None:
         """
         Remove all stored events.
@@ -171,4 +221,3 @@ class Database:
         with self._connect() as connection:
             connection.execute("DELETE FROM events")
             connection.commit()
-            

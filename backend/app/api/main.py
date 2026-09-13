@@ -3,6 +3,7 @@ from typing import Any, Dict
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 from app.ingestion.ingestion_manager import IngestionManager
 
 
@@ -11,6 +12,7 @@ app = FastAPI(
     description="Lossless, traceable and vendor-agnostic security log preprocessing.",
     version="0.1.0",
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -90,25 +92,49 @@ def get_event(event_id: str) -> Dict[str, Any]:
     return event
 
 
+@app.get("/events/{event_id}/verify")
+def verify_event(event_id: str) -> Dict[str, Any]:
+    result = manager.verify_event(event_id)
+
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Event not found",
+        )
+
+    return result
+
+
 @app.get("/stats")
 def get_stats() -> Dict[str, Any]:
     return {
         "total_events": manager.count_events(),
         "supported_formats": manager.supported_formats(),
     }
+
+
 @app.post("/upload")
-async def upload_log_file(file: UploadFile = File(...)) -> Dict[str, Any]:
+async def upload_log_file(
+    file: UploadFile = File(...),
+) -> Dict[str, Any]:
+
     if not file.filename:
-        raise HTTPException(status_code=400, detail="No file selected")
+        raise HTTPException(
+            status_code=400,
+            detail="No file selected",
+        )
 
     allowed_extensions = {".log", ".txt"}
 
     filename = file.filename.lower()
 
-    if not any(filename.endswith(ext) for ext in allowed_extensions):
+    if not any(
+        filename.endswith(ext)
+        for ext in allowed_extensions
+    ):
         raise HTTPException(
             status_code=400,
-            detail="Only .log and .txt files are supported"
+            detail="Only .log and .txt files are supported",
         )
 
     content = await file.read()
@@ -118,7 +144,7 @@ async def upload_log_file(file: UploadFile = File(...)) -> Dict[str, Any]:
     except UnicodeDecodeError as error:
         raise HTTPException(
             status_code=400,
-            detail="File must be UTF-8 encoded text"
+            detail="File must be UTF-8 encoded text",
         ) from error
 
     lines = [
@@ -130,7 +156,7 @@ async def upload_log_file(file: UploadFile = File(...)) -> Dict[str, Any]:
     if not lines:
         raise HTTPException(
             status_code=400,
-            detail="Uploaded file is empty"
+            detail="Uploaded file is empty",
         )
 
     processed = []
@@ -139,16 +165,22 @@ async def upload_log_file(file: UploadFile = File(...)) -> Dict[str, Any]:
     for line_number, line in enumerate(lines, start=1):
         try:
             result = manager.process_log(line)
-            processed.append({
-                "line": line_number,
-                "result": result
-            })
+
+            processed.append(
+                {
+                    "line": line_number,
+                    "result": result,
+                }
+            )
+
         except Exception as error:
-            failed.append({
-                "line": line_number,
-                "error": str(error),
-                "raw_event": line
-            })
+            failed.append(
+                {
+                    "line": line_number,
+                    "error": str(error),
+                    "raw_event": line,
+                }
+            )
 
     return {
         "filename": file.filename,
@@ -156,5 +188,5 @@ async def upload_log_file(file: UploadFile = File(...)) -> Dict[str, Any]:
         "processed_count": len(processed),
         "failed_count": len(failed),
         "processed": processed,
-        "failed": failed
+        "failed": failed,
     }

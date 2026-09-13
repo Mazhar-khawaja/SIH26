@@ -21,7 +21,9 @@ class IngestionManager:
         ↓
     Normalization
         ↓
-    Integrity Check
+    SHA-256 Integrity Hash
+        ↓
+    Tamper-Evident Chain Hash
         ↓
     Quality Check
         ↓
@@ -52,38 +54,109 @@ class IngestionManager:
 
         event = normalized_event.model_dump()
 
-        # 3. Calculate integrity hash
+        # 3. Calculate SHA-256 hash of the exact raw event
         raw_hash = self.integrity_checker.calculate_hash(
             event["raw_event"]
         )
 
-        # 4. Check event quality
+        # 4. Get the previous event's chain hash
+        previous_hash = self.database.get_latest_chain_hash() or ""
+
+        # 5. Calculate tamper-evident chain hash
+        chain_hash = self.integrity_checker.calculate_chain_hash(
+            event["raw_event"],
+            previous_hash,
+        )
+
+        # 6. Store integrity information inside the event
+        event["integrity_hash"] = raw_hash
+        event["previous_hash"] = previous_hash or None
+        event["chain_hash"] = chain_hash
+
+        # 7. Check event quality
         quality_result = self.quality_checker.check(event)
 
-        # 5. Check whether parser format is supported
+        # 8. Check whether parser format is supported
         format_result = self.unknown_detector.check(
             event.get("parser")
         )
 
-        # 6. Store event
+        # 9. Store event
         self.database.save_event(
             event=event,
             raw_hash=raw_hash,
             quality=quality_result,
+            previous_hash=previous_hash or None,
+            chain_hash=chain_hash,
         )
 
-        # 7. Return complete processing result
+        # 10. Verify the newly created hashes
+        hash_verified = self.integrity_checker.verify_hash(
+            event["raw_event"],
+            raw_hash,
+        )
+
+        chain_verified = self.integrity_checker.verify_chain_hash(
+            event["raw_event"],
+            previous_hash,
+            chain_hash,
+        )
+
+        # 11. Return complete processing result
         return {
             "event": event,
             "integrity": {
                 "sha256": raw_hash,
-                "verified": self.integrity_checker.verify_hash(
-                    event["raw_event"],
-                    raw_hash,
-                ),
+                "previous_hash": previous_hash or None,
+                "chain_hash": chain_hash,
+                "verified": hash_verified,
+                "chain_verified": chain_verified,
             },
             "quality": quality_result,
             "format": format_result,
+        }
+
+    def verify_event(self, event_id: str) -> Dict[str, Any] | None:
+        """
+        Verify the integrity of a stored event.
+        """
+
+        event = self.database.get_event(event_id)
+
+        if event is None:
+            return None
+
+        raw_event = event.get("raw_event", "")
+        raw_hash = event.get("raw_hash")
+        previous_hash = event.get("previous_hash") or ""
+        chain_hash = event.get("chain_hash")
+
+        hash_verified = False
+        chain_verified = False
+
+        if raw_hash:
+            hash_verified = self.integrity_checker.verify_hash(
+                raw_event,
+                raw_hash,
+            )
+
+        if chain_hash:
+            chain_verified = self.integrity_checker.verify_chain_hash(
+                raw_event,
+                previous_hash,
+                chain_hash,
+            )
+
+        return {
+            "event_id": event_id,
+            "integrity_hash": raw_hash,
+            "previous_hash": previous_hash or None,
+            "chain_hash": chain_hash,
+            "hash_verified": hash_verified,
+            "chain_verified": chain_verified,
+            "tamper_detected": not (
+                hash_verified and chain_verified
+            ),
         }
 
     def supported_formats(self) -> list[str]:
