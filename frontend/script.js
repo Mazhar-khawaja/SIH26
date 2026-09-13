@@ -20,6 +20,15 @@ const examples = {
     cef:
         'CEF:0|VendorX|Firewall|1.0|1001|Connection Blocked|8|src=10.10.10.5 dst=10.10.10.20 dpt=22 act=blocked',
 
+    xml:
+        '<security_event><timestamp>2026-08-20T14:32:10</timestamp><source_ip>10.10.10.5</source_ip><destination_ip>10.10.10.20</destination_ip><destination_port>22</destination_port><action>blocked</action></security_event>',
+
+    csv:
+        'timestamp,src,dst,dport,action\n2026-08-20T14:32:10,10.10.10.5,10.10.10.20,22,blocked',
+
+    leef:
+        'LEEF:2.0|VendorX|Firewall|1.0|1001|src=10.10.10.5\tdst=10.10.10.20\tdport=22\tact=blocked',
+
     unknown:
         'FIREWALL_ALERT|device=FW01|user=admin|status=blocked|reason=malicious'
 

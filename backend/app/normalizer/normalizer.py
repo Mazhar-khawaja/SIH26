@@ -15,18 +15,26 @@ class Normalizer:
             "src",
             "sourceAddress",
             "source_address",
+            "src_ip",
+            "SourceIP",
+            "srcAddress",
         ],
         "destination_ip": [
             "destination_ip",
             "dst",
             "destinationAddress",
             "destination_address",
+            "dst_ip",
+            "DestinationIP",
+            "dstAddress",
         ],
         "source_port": [
             "source_port",
             "sport",
             "sourcePort",
             "source_port_number",
+            "src_port",
+            "SourcePort",
         ],
         "destination_port": [
             "destination_port",
@@ -34,28 +42,42 @@ class Normalizer:
             "dpt",
             "destinationPort",
             "destination_port_number",
+            "dst_port",
+            "DestinationPort",
         ],
         "action": [
             "action",
             "act",
+            "Action",
         ],
         "protocol": [
             "protocol",
             "proto",
+            "Protocol",
         ],
         "severity": [
             "severity",
             "sev",
+            "Severity",
+            "Level",
         ],
         "timestamp": [
             "timestamp",
             "time",
+            "devTime",
+            "TimeCreated",
+            "EventTime",
+            "SystemTime",
+            "date",
         ],
         "event_type": [
             "event_type",
             "eventType",
             "event_name",
             "name",
+            "event_id",
+            "EventID",
+            "signature_id",
         ],
     }
 
@@ -87,7 +109,10 @@ class Normalizer:
                 self.FIELD_MAPPINGS["timestamp"],
             ),
             "source": parsed_data.get("device_product")
-            or parsed_data.get("source"),
+            or parsed_data.get("product")
+            or parsed_data.get("source")
+            or parsed_data.get("vendor")
+            or parsed_data.get("device_vendor"),
             "source_type": parsed_data.get("source_type"),
             "source_ip": self._get_value(
                 parsed_data,
