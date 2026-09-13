@@ -49,37 +49,39 @@ class IngestionManager:
         # 1. Detect format and parse
         parsed_data = self.parser_manager.parse(log)
 
-        # 2. Normalize into Universal Event Schema
+        # 2. Analyze format and extract any identifiable data
+        format_result = self.unknown_detector.check(
+            parsed_data.get("parser"),
+            parsed_data.get("raw_event", log),
+        )
+        parsed_data["extracted_data"] = format_result.get("extracted_data", {})
+
+        # 3. Normalize into Universal Event Schema
         normalized_event = self.normalizer.normalize(parsed_data)
 
         event = normalized_event.model_dump()
 
-        # 3. Calculate SHA-256 hash of the exact raw event
+        # 4. Calculate SHA-256 hash of the exact raw event
         raw_hash = self.integrity_checker.calculate_hash(
             event["raw_event"]
         )
 
-        # 4. Get the previous event's chain hash
+        # 5. Get the previous event's chain hash
         previous_hash = self.database.get_latest_chain_hash() or ""
 
-        # 5. Calculate tamper-evident chain hash
+        # 6. Calculate tamper-evident chain hash
         chain_hash = self.integrity_checker.calculate_chain_hash(
             event["raw_event"],
             previous_hash,
         )
 
-        # 6. Store integrity information inside the event
+        # 7. Store integrity information inside the event
         event["integrity_hash"] = raw_hash
         event["previous_hash"] = previous_hash or None
         event["chain_hash"] = chain_hash
 
-        # 7. Check event quality
+        # 8. Check event quality
         quality_result = self.quality_checker.check(event)
-
-        # 8. Check whether parser format is supported
-        format_result = self.unknown_detector.check(
-            event.get("parser")
-        )
 
         # 9. Store event
         self.database.save_event(
@@ -88,6 +90,7 @@ class IngestionManager:
             quality=quality_result,
             previous_hash=previous_hash or None,
             chain_hash=chain_hash,
+            format=format_result,
         )
 
         # 10. Verify the newly created hashes

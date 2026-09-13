@@ -7,10 +7,7 @@ from .cef_parser import CEFParser
 
 
 class ParserManager:
-    """
-    Manages all available ULPF parsers and automatically
-    selects the appropriate parser for an incoming log.
-    """
+    """Manage supported ULPF parsers and detect log formats."""
 
     def __init__(self) -> None:
         self.parsers: List[BaseParser] = [
@@ -19,39 +16,38 @@ class ParserManager:
             CEFParser(),
         ]
 
-    def detect_parser(self, log: str) -> BaseParser:
-        """
-        Automatically detect the parser that can handle the log.
-        """
+    def detect_parser(self, log: str) -> BaseParser | None:
+        """Return a matching parser, or None for an unknown format."""
         for parser in self.parsers:
             if parser.can_parse(log):
                 return parser
-
-        raise ValueError("Unsupported or unknown log format")
+        return None
 
     def parse(self, log: str) -> Dict[str, Any]:
-        """
-        Detect the appropriate parser and parse the log.
-        """
+        """Parse supported logs and safely pass unknown logs downstream."""
+        if not log or not log.strip():
+            raise ValueError("Log cannot be empty")
+
+        log = log.strip()
         parser = self.detect_parser(log)
 
+        if parser is None:
+            return {
+                "source_type": "unknown",
+                "raw_event": log,
+                "parser": None,
+                "parse_status": "unknown",
+            }
+
         result = parser.parse(log)
-
         result["parser"] = parser.name
-
+        result["parse_status"] = "success"
         return result
 
     def add_parser(self, parser: BaseParser) -> None:
-        """
-        Add a new parser without modifying the existing pipeline.
-        """
         if not isinstance(parser, BaseParser):
             raise TypeError("Parser must inherit from BaseParser")
-
         self.parsers.append(parser)
 
     def list_parsers(self) -> List[str]:
-        """
-        Return the names of all registered parsers.
-        """
         return [parser.name for parser in self.parsers]

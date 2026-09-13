@@ -42,6 +42,7 @@ class Database:
                     action TEXT,
                     severity TEXT,
                     raw_event TEXT NOT NULL,
+                    extracted_data TEXT,
                     raw_hash TEXT,
                     previous_hash TEXT,
                     chain_hash TEXT,
@@ -49,6 +50,7 @@ class Database:
                     parse_status TEXT,
                     quality_status TEXT,
                     quality_score INTEGER,
+                    format TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
                 """
@@ -75,6 +77,16 @@ class Database:
                     "ALTER TABLE events ADD COLUMN chain_hash TEXT"
                 )
 
+            if "extracted_data" not in columns:
+                connection.execute(
+                    "ALTER TABLE events ADD COLUMN extracted_data TEXT"
+                )
+
+            if "format" not in columns:
+                connection.execute(
+                    "ALTER TABLE events ADD COLUMN format TEXT"
+                )
+
             connection.commit()
 
     def save_event(
@@ -84,12 +96,15 @@ class Database:
         quality: Dict[str, Any] | None = None,
         previous_hash: str | None = None,
         chain_hash: str | None = None,
+        format: Dict[str, Any] | None = None,
     ) -> None:
         """
         Store a normalized event and its integrity information.
         """
 
         quality = quality or {}
+        format = format or {}
+        detected_format = format.get("format")
 
         with self._connect() as connection:
             connection.execute(
@@ -108,15 +123,17 @@ class Database:
                     action,
                     severity,
                     raw_event,
+                    extracted_data,
                     raw_hash,
                     previous_hash,
                     chain_hash,
                     parser,
                     parse_status,
                     quality_status,
-                    quality_score
+                    quality_score,
+                    format
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event.get("event_id"),
@@ -132,6 +149,7 @@ class Database:
                     event.get("action"),
                     event.get("severity"),
                     event.get("raw_event"),
+                    json.dumps(event.get("extracted_data") or {}),
                     raw_hash,
                     previous_hash,
                     chain_hash,
@@ -139,6 +157,7 @@ class Database:
                     event.get("parse_status"),
                     quality.get("status"),
                     quality.get("quality_score"),
+                    detected_format,
                 ),
             )
 

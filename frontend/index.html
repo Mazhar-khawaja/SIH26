@@ -150,6 +150,10 @@
                     Load CEF Example
                 </button>
 
+                <button class="example-btn" data-example="unknown">
+                    Load Unknown Example
+                </button>
+
             </div>
 
 
@@ -215,16 +219,46 @@
                             <strong id="qualityScore">—</strong>
                         </div>
 
+                        <div class="result-row">
+                            <span>Confidence</span>
+                            <strong id="qualityConfidence">—</strong>
+                        </div>
 
                         <div class="result-row">
-                            <span>Integrity</span>
+                            <span>Quality Checks</span>
+                            <strong id="qualityChecks">—</strong>
+                        </div>
+
+
+                        <div class="result-row">
+                            <span>SHA-256 Integrity</span>
                             <strong id="integrityStatus">—</strong>
+                        </div>
+
+                        <div class="result-row">
+                            <span>Chain Verification</span>
+                            <strong id="chainStatus">—</strong>
                         </div>
 
 
                         <div class="result-row">
                             <span>Event ID</span>
                             <code id="eventId">—</code>
+                        </div>
+
+                        <div class="result-row">
+                            <span>Format Analysis</span>
+                            <strong id="formatMessage">—</strong>
+                        </div>
+
+                        <div class="result-row">
+                            <span>Probable Format</span>
+                            <strong id="formatSuggestion">—</strong>
+                        </div>
+
+                        <div class="result-row">
+                            <span>Identified Data</span>
+                            <strong id="identifiedData">—</strong>
                         </div>
 
                     </div>
@@ -335,6 +369,14 @@
                     <span>SHA-256 Integrity Hash</span>
 
                     <code id="rawHash">—</code>
+
+                </div>
+
+                <div class="hash-box">
+
+                    <span>Tamper-Evident Chain Hash</span>
+
+                    <code id="chainHash">—</code>
 
                 </div>
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Any, Dict, Optional
 
 
 class UniversalEvent(BaseModel):
@@ -25,6 +25,8 @@ class UniversalEvent(BaseModel):
     event_type: Optional[str] = None
     action: Optional[str] = None
     severity: Optional[str] = None
+
+    extracted_data: Dict[str, Any] = Field(default_factory=dict)
 
     raw_event: str = Field(
         ...,

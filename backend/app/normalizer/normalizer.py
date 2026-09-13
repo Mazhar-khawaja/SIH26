@@ -126,9 +126,10 @@ class Normalizer:
                 self.FIELD_MAPPINGS["severity"],
             ),
             "raw_event": parsed_data.get("raw_event", ""),
+            "extracted_data": parsed_data.get("extracted_data") or {},
             "parser": parsed_data.get("parser")
             or parsed_data.get("source_type"),
-            "parse_status": "success",
+            "parse_status": parsed_data.get("parse_status", "success"),
         }
 
         return UniversalEvent(**normalized_data)

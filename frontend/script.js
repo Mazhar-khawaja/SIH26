@@ -18,7 +18,10 @@ const examples = {
         '{"timestamp":"2026-08-20T14:32:10","sourceAddress":"10.10.10.5","destinationAddress":"10.10.10.20","destinationPort":22,"action":"blocked"}',
 
     cef:
-        'CEF:0|VendorX|Firewall|1.0|1001|Connection Blocked|8|src=10.10.10.5 dst=10.10.10.20 dpt=22 act=blocked'
+        'CEF:0|VendorX|Firewall|1.0|1001|Connection Blocked|8|src=10.10.10.5 dst=10.10.10.20 dpt=22 act=blocked',
+
+    unknown:
+        'FIREWALL_ALERT|device=FW01|user=admin|status=blocked|reason=malicious'
 
 };
 
@@ -72,8 +75,26 @@ const qualityStatus =
 const qualityScore =
     document.getElementById("qualityScore");
 
+const qualityConfidence =
+    document.getElementById("qualityConfidence");
+
+const qualityChecks =
+    document.getElementById("qualityChecks");
+
+const formatMessage =
+    document.getElementById("formatMessage");
+
+const formatSuggestion =
+    document.getElementById("formatSuggestion");
+
+const identifiedData =
+    document.getElementById("identifiedData");
+
 const integrityStatus =
     document.getElementById("integrityStatus");
+
+const chainStatus =
+    document.getElementById("chainStatus");
 
 const eventId =
     document.getElementById("eventId");
@@ -117,6 +138,9 @@ const rawEvent =
 
 const rawHash =
     document.getElementById("rawHash");
+
+const chainHash =
+    document.getElementById("chainHash");
 
 
 // Universal JSON
@@ -258,7 +282,7 @@ function displayResult(data) {
 
     detectedFormat.textContent =
         displayValue(format.status === "supported"
-            ? event.source_type
+            ? format.format
             : "Unknown");
 
 
@@ -273,9 +297,45 @@ function displayResult(data) {
     qualityScore.textContent =
         displayValue(quality.quality_score);
 
+    qualityConfidence.textContent =
+        displayValue(quality.confidence);
+
+    const checks = quality.checks || {};
+    qualityChecks.textContent =
+        `C:${displayValue(checks.completeness)}% | V:${displayValue(checks.validity)}% | K:${displayValue(checks.consistency)}%`;
+
+    formatMessage.textContent =
+        displayValue(format.message || format.reason);
+
+    const probableFormat =
+        format.status === "supported"
+            ? format.format
+            : (format.suggested_format || "unknown");
+
+    const formatLabels = {
+        "vendor-key-value": "VENDOR-KV",
+        "pipe-delimited": "PIPE",
+        "csv-like": "CSV",
+        "unknown": "UNKNOWN",
+    };
+
+    formatSuggestion.textContent =
+        displayValue(formatLabels[probableFormat] || probableFormat.toUpperCase());
+
+    const extracted = event.extracted_data || format.extracted_data || {};
+    identifiedData.textContent =
+        Object.keys(extracted).length
+            ? Object.entries(extracted).map(([key, value]) => `${key}=${value}`).join(" | ")
+            : "—";
+
 
     integrityStatus.textContent =
         integrity.verified
+            ? "Verified"
+            : "Failed";
+
+    chainStatus.textContent =
+        integrity.chain_verified
             ? "Verified"
             : "Failed";
 
@@ -339,6 +399,9 @@ function displayResult(data) {
     rawHash.textContent =
         displayValue(integrity.sha256);
 
+    chainHash.textContent =
+        displayValue(integrity.chain_hash);
+
 
     // -----------------------------------------------------
     // Universal JSON
@@ -358,6 +421,11 @@ function displayResult(data) {
 
     qualityStatusCard.textContent =
         displayValue(quality.status);
+
+    // Make unknown-format detection visually obvious.
+    if (format.status === "unknown") {
+        detectedFormat.textContent = "UNKNOWN";
+    }
 
 
     pipelineStatus.textContent =
