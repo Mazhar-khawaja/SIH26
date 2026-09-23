@@ -99,13 +99,22 @@ class Normalizer:
         """
         Convert parser output into a UniversalEvent.
         """
+                # Merge extracted vendor fields with parser output so that
+        # unknown/vendor formats can also be normalized using the
+        # existing FIELD_MAPPINGS aliases.
+        extracted_data = parsed_data.get("extracted_data") or {}
+
+        normalization_data = {
+            **extracted_data,
+            **parsed_data,
+        }
 
         event_id = f"ULPF-{uuid4().hex[:12].upper()}"
 
         normalized_data: Dict[str, Any] = {
             "event_id": event_id,
             "timestamp": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["timestamp"],
             ),
             "source": parsed_data.get("device_product")
@@ -115,39 +124,39 @@ class Normalizer:
             or parsed_data.get("device_vendor"),
             "source_type": parsed_data.get("source_type"),
             "source_ip": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["source_ip"],
             ),
             "source_port": self._convert_port(
                 self._get_value(
-                    parsed_data,
+                    normalization_data,
                     self.FIELD_MAPPINGS["source_port"],
                 )
             ),
             "destination_ip": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["destination_ip"],
             ),
             "destination_port": self._convert_port(
                 self._get_value(
-                    parsed_data,
+                    normalization_data,
                     self.FIELD_MAPPINGS["destination_port"],
                 )
             ),
             "protocol": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["protocol"],
             ),
             "event_type": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["event_type"],
             ),
             "action": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["action"],
             ),
             "severity": self._get_value(
-                parsed_data,
+                normalization_data,
                 self.FIELD_MAPPINGS["severity"],
             ),
             "raw_event": parsed_data.get("raw_event", ""),

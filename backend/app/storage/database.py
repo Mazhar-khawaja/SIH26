@@ -240,3 +240,13 @@ class Database:
         with self._connect() as connection:
             connection.execute("DELETE FROM events")
             connection.commit()
+    def close(self) -> None:
+        """
+        Close the database connection.
+
+        Database operations use short-lived connections, so there is
+        normally no persistent connection to close. This method exists
+        for compatibility with tests and callers that expect an
+        explicit cleanup operation.
+        """
+        return None

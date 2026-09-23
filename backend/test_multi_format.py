@@ -1,4 +1,5 @@
 import os
+import gc
 import unittest
 from app.ingestion.ingestion_manager import IngestionManager
 
@@ -11,8 +12,15 @@ class TestMultiFormatIngestion(unittest.TestCase):
         self.manager = IngestionManager(database_path=self.db_file)
 
     def tearDown(self):
+        gc.collect()
+
+        try:
+            self.manager.database.close()
+        except AttributeError:
+            pass
+
         if os.path.exists(self.db_file):
-            os.remove(self.db_file)
+           os.remove(self.db_file)
 
     def test_supported_formats(self):
         formats = self.manager.supported_formats()
