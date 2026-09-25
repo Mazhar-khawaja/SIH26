@@ -23,10 +23,16 @@ class StructuredLogger:
             "service": settings.app_name,
             "message": message,
         }
-        log_entry.update(kwargs)
+
+        for k, v in kwargs.items():
+            if isinstance(v, Exception):
+                log_entry[k] = str(v)
+                log_entry[f"{k}_type"] = type(v).__name__
+            else:
+                log_entry[k] = v
 
         # Log as JSON string for structured logging
-        self.logger.log(level, json.dumps(log_entry))
+        self.logger.log(level, json.dumps(log_entry, default=str))
 
     def info(self, message: str, **kwargs: Any) -> None:
         self._log(logging.INFO, message, **kwargs)

@@ -7,6 +7,9 @@ services:
       POSTGRES_DB: ulpf
     ports:
       - "5432:5432"
+    networks:
+      - default
+      - ulpf_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -86,6 +89,21 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: ["python", "worker_main.py"]
+
+  adminer:
+    image: adminer:latest
+    container_name: ulpf-adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - ulpf_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  ulpf_network:
 
 volumes:
   postgres_data:

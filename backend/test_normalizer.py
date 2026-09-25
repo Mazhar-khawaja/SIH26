@@ -31,6 +31,30 @@ class TestNormalizer(unittest.TestCase):
         self.assertEqual(event.severity, "INFO")
         self.assertEqual(event.raw_event, '{"src": "1.1.1.1"}')
 
+    def test_cloudtrail_useridentity_username(self):
+        parsed = {"userIdentity": {"userName": "admin"}}
+        event = self.normalizer.normalize(parsed)
+        self.assertEqual(event.user, "admin")
+
+    def test_cloudtrail_useridentity_principalid(self):
+        parsed = {"userIdentity": {"principalId": "ABC123"}}
+        event = self.normalizer.normalize(parsed)
+        self.assertEqual(event.user, "ABC123")
+
+    def test_cloudtrail_useridentity_arn(self):
+        parsed = {"userIdentity": {"arn": "arn:aws:iam::123:user/admin"}}
+        event = self.normalizer.normalize(parsed)
+        self.assertEqual(event.user, "arn:aws:iam::123:user/admin")
+
+    def test_cloudtrail_useridentity_string(self):
+        parsed = {"userIdentity": "admin"}
+        event = self.normalizer.normalize(parsed)
+        self.assertEqual(event.user, "admin")
+
+    def test_cloudtrail_useridentity_missing(self):
+        parsed = {"userIdentity": {}}
+        event = self.normalizer.normalize(parsed)
+        self.assertIsNone(event.user)
 
 if __name__ == "__main__":
     unittest.main()

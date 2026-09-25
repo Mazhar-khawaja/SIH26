@@ -10,7 +10,7 @@ class Normalizer:
     """
 
     FIELD_MAPPINGS = {
-        "source_ip": ["source_ip", "src", "sourceAddress", "source_address", "src_ip", "SourceIP", "srcAddress", "sourceIpAddress"],
+        "source_ip": ["source_ip", "src", "sourceAddress", "source_address", "src_ip", "SourceIP", "srcAddress", "sourceIpAddress", "sourceIPAddress"],
         "destination_ip": ["destination_ip", "dst", "destinationAddress", "destination_address", "dst_ip", "DestinationIP", "dstAddress"],
         "source_port": ["source_port", "sport", "sourcePort", "source_port_number", "src_port", "SourcePort"],
         "destination_port": ["destination_port", "dport", "dpt", "destinationPort", "destination_port_number", "dst_port", "DestinationPort"],
@@ -54,7 +54,7 @@ class Normalizer:
             "event_type": str(self._get_value(parsed_data, self.FIELD_MAPPINGS["event_type"])) if self._get_value(parsed_data, self.FIELD_MAPPINGS["event_type"]) else None,
             "action": self._get_value(parsed_data, self.FIELD_MAPPINGS["action"]),
             "severity": str(self._get_value(parsed_data, self.FIELD_MAPPINGS["severity"])) if self._get_value(parsed_data, self.FIELD_MAPPINGS["severity"]) else None,
-            "user": self._get_value(parsed_data, self.FIELD_MAPPINGS["user"]),
+            "user": self._extract_user(self._get_value(parsed_data, self.FIELD_MAPPINGS["user"])),
             "hostname": self._get_value(parsed_data, self.FIELD_MAPPINGS["hostname"]),
             "application": self._get_value(parsed_data, self.FIELD_MAPPINGS["application"]),
             "raw_event": parsed_data.get("raw_event", ""),
@@ -93,3 +93,16 @@ class Normalizer:
             return int(value)
         except (ValueError, TypeError):
             return None
+
+    @staticmethod
+    def _extract_user(value: Any) -> str | None:
+        """
+        Extract user string safely, handling CloudTrail userIdentity dictionaries.
+        """
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value
+        if isinstance(value, dict):
+            return value.get("userName") or value.get("principalId") or value.get("arn")
+        return None

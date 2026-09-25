@@ -30,7 +30,7 @@ class IngestionManager:
     SQLite Storage
     """
 
-    def __init__(self, database_path: str = "data/ulpf.db") -> None:
+    def __init__(self, database_path: str = None) -> None:
         self.parser_manager = ParserManager()
         self.normalizer = Normalizer()
         self.integrity_checker = IntegrityChecker()

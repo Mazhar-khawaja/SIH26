@@ -57,5 +57,14 @@ class TestAPIV1(unittest.TestCase):
         res = client.get("/api/v1/analytics/events/unknown-event", headers=headers)
         self.assertEqual(res.status_code, 404)
 
+    def test_cloudtrail_event_ingestion(self):
+        log = '{"eventName":"ConsoleLogin","userIdentity":{"userName":"admin"},"sourceIPAddress":"192.168.1.50","eventTime":"2026-09-25T10:00:00Z"}'
+        response = client.post("/api/v1/events", json={"log": log}, headers={"X-API-Key": settings.api_key})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("event", data)
+        self.assertEqual(data["event"]["user"], "admin")
+        self.assertEqual(data["event"]["source_ip"], "192.168.1.50")
+
 if __name__ == "__main__":
     unittest.main()
