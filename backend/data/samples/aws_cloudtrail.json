@@ -1,0 +1,28 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAXXXXXXXXXX",
+        "arn": "arn:aws:iam::123456789012:user/Alice",
+        "accountId": "123456789012",
+        "userName": "Alice"
+      },
+      "eventTime": "2026-09-24T10:00:00Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "PutObject",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.168.1.1",
+      "userAgent": "[aws-cli/2.0.0 Python/3.8.0]",
+      "requestParameters": {
+        "bucketName": "my-secure-bucket",
+        "key": "sensitive-data.csv"
+      },
+      "responseElements": null,
+      "requestID": "12345ABCD",
+      "eventID": "abc-123-xyz",
+      "eventType": "AwsApiCall"
+    }
+  ]
+}

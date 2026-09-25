@@ -1,0 +1,9 @@
+{
+  "name": "windows_event",
+  "version": "1.0.0",
+  "description": "Parses Windows Event XML logs",
+  "vendor": "Microsoft",
+  "supported_formats": ["xml", "windows_event"],
+  "priority": 15,
+  "enabled": true
+}

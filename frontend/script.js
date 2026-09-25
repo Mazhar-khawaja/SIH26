@@ -2,7 +2,7 @@
 // ZELTA ULPF — Frontend Logic
 // =========================================================
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "http://127.0.0.1:8000/api/v1";
 
 
 // =========================================================
@@ -197,7 +197,11 @@ async function loadStats() {
     try {
 
         const statsResponse =
-            await fetch(`${API_BASE}/stats`);
+            await fetch(`${API_BASE}/stats`, {
+                headers: {
+                    "X-API-Key": "default_api_key_change_me"
+                }
+            });
 
         if (!statsResponse.ok) {
             throw new Error("Could not load statistics");
@@ -491,7 +495,8 @@ async function processLog() {
 
                 headers: {
                     "Content-Type":
-                        "application/json"
+                        "application/json",
+                    "X-API-Key": "default_api_key_change_me"
                 },
 
                 body: JSON.stringify({

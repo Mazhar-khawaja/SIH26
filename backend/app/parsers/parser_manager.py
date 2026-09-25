@@ -9,8 +9,11 @@ from .xml_parser import XMLParser
 from .csv_parser import CSVParser
 from .leef_parser import LEEFParser
 
-logger = logging.getLogger(__name__)
+import os
+from .plugin_registry import PluginRegistry
+from .plugin_loader import PluginLoader
 
+logger = logging.getLogger(__name__)
 
 class ParserManager:
     """
@@ -18,9 +21,9 @@ class ParserManager:
     enable/disable states, and unknown format handling.
     """
 
-    def __init__(self) -> None:
-        # Internal registry: name -> {"parser": BaseParser, "priority": int, "enabled": bool}
-        self._registry: Dict[str, Dict[str, Any]] = {}
+    def __init__(self, plugins_dir: str = "plugins") -> None:
+        self.registry = PluginRegistry()
+        self.plugins_dir = plugins_dir
 
         # Register default supported parsers with deterministic priorities
         self.register_parser(JSONParser(), priority=10)
@@ -30,119 +33,79 @@ class ParserManager:
         self.register_parser(XMLParser(), priority=50)
         self.register_parser(CSVParser(), priority=60)
 
+        self.reload_plugins()
+
+    def reload_plugins(self):
+        # Remove dynamically loaded plugins first
+        to_remove = [item["name"] for item in self.registry.list_all() if item["metadata"] is not None]
+        for name in to_remove:
+            self.registry.unregister(name)
+
+        loader = PluginLoader(self.plugins_dir)
+        loaded = loader.load_plugins()
+        for name, data in loaded.items():
+            # Avoid duplicate built-in name crashes
+            if self.registry.get(name):
+                logger.warning(f"Plugin '{name}' conflicts with existing parser, skipping.")
+                continue
+            self.registry.register(
+                name=name,
+                parser=data["parser"],
+                priority=data["priority"],
+                enabled=data["enabled"],
+                metadata=data["metadata"]
+            )
+
     @property
     def parsers(self) -> List[BaseParser]:
-        """
-        Backward compatibility property returning list of active BaseParser instances.
-        """
-        active = [
-            item["parser"]
-            for item in self._get_sorted_items()
-            if item["enabled"]
-        ]
-        return active
+        return [item["parser"] for item in self.registry.get_sorted_items() if item["enabled"]]
 
-    def register_parser(
-        self,
-        parser: BaseParser,
-        priority: int = 100,
-        enabled: bool = True,
-    ) -> None:
-        """
-        Register a new parser dynamically with priority and duplicate protection.
-        """
+    def register_parser(self, parser: BaseParser, priority: int = 100, enabled: bool = True) -> None:
         if not isinstance(parser, BaseParser):
             raise TypeError("Parser must inherit from BaseParser")
-
         name = parser.name
         if not name or not isinstance(name, str):
             raise ValueError("Parser must have a valid non-empty string name")
-
-        if name in self._registry:
-            raise ValueError(f"Parser with name '{name}' is already registered")
-
-        self._registry[name] = {
-            "parser": parser,
-            "priority": priority,
-            "enabled": enabled,
-        }
+        self.registry.register(name, parser, priority, enabled)
 
     def unregister_parser(self, name: str) -> None:
-        """
-        Unregister a parser by name.
-        """
-        if name not in self._registry:
-            raise KeyError(f"Parser '{name}' is not registered")
-        del self._registry[name]
+        self.registry.unregister(name)
 
     def enable_parser(self, name: str) -> None:
-        """
-        Enable a registered parser.
-        """
-        if name not in self._registry:
-            raise KeyError(f"Parser '{name}' is not registered")
-        self._registry[name]["enabled"] = True
+        self.registry.enable(name)
 
     def disable_parser(self, name: str) -> None:
-        """
-        Disable a registered parser.
-        """
-        if name not in self._registry:
-            raise KeyError(f"Parser '{name}' is not registered")
-        self._registry[name]["enabled"] = False
+        self.registry.disable(name)
 
     def get_parser(self, name: str) -> Optional[BaseParser]:
-        """
-        Retrieve a registered parser instance by name.
-        """
-        item = self._registry.get(name)
+        item = self.registry.get(name)
         return item["parser"] if item else None
 
     def get_parser_info(self, name: str) -> Optional[Dict[str, Any]]:
-        """
-        Retrieve metadata for a registered parser.
-        """
-        item = self._registry.get(name)
+        item = self.registry.get(name)
         if not item:
             return None
+        meta = item.get("metadata")
         return {
             "name": name,
             "enabled": item["enabled"],
             "priority": item["priority"],
-            "parser": item["parser"],
+            "health": item["health"],
+            "version": meta.version if meta else "built-in",
+            "parser": item["parser"]
         }
 
     def list_parsers(self) -> List[str]:
-        """
-        Return names of currently enabled parsers in deterministic priority order.
-        """
-        return [
-            item["parser"].name
-            for item in self._get_sorted_items()
-            if item["enabled"]
-        ]
+        return [item["parser"].name for item in self.registry.get_sorted_items() if item["enabled"]]
 
     def list_all_parsers(self) -> List[Dict[str, Any]]:
-        """
-        Return metadata list for all registered parsers.
-        """
-        return [
-            {
-                "name": item["parser"].name,
-                "enabled": item["enabled"],
-                "priority": item["priority"],
-            }
-            for item in self._get_sorted_items()
-        ]
+        return self.registry.list_all()
 
     def detect_parser(self, log: str) -> Optional[BaseParser]:
-        """
-        Detect matching parser using deterministic priority ordering and safe error isolation.
-        """
         if not log or not log.strip():
             return None
 
-        for item in self._get_sorted_items():
+        for item in self.registry.get_sorted_items():
             if not item["enabled"]:
                 continue
 
@@ -151,19 +114,13 @@ class ParserManager:
                 if parser.can_parse(log):
                     return parser
             except Exception as error:
-                logger.warning(
-                    "Parser '%s' raised an error during detection: %s",
-                    parser.name,
-                    error,
-                )
+                logger.warning(f"Parser '{parser.name}' raised an error during detection: {error}")
+                self.registry.mark_unhealthy(parser.name, str(error))
                 continue
 
         return None
 
     def parse(self, log: str) -> Dict[str, Any]:
-        """
-        Parse supported logs and safely pass unknown logs downstream.
-        """
         if not log or not log.strip():
             raise ValueError("Log cannot be empty")
 
@@ -181,14 +138,17 @@ class ParserManager:
         try:
             result = parser.parse(log)
             result["parser"] = parser.name
+
+            # Attach parser version if from a plugin
+            item = self.registry.get(parser.name)
+            if item and item.get("metadata"):
+                result["parser_version"] = item["metadata"].version
+
             result["parse_status"] = "success"
             return result
         except Exception as error:
-            logger.warning(
-                "Parser '%s' failed to parse log: %s",
-                parser.name,
-                error,
-            )
+            logger.warning(f"Parser '{parser.name}' failed to parse log: {error}")
+            self.registry.mark_unhealthy(parser.name, str(error))
             return {
                 "source_type": "unknown",
                 "raw_event": log,
@@ -198,16 +158,4 @@ class ParserManager:
             }
 
     def add_parser(self, parser: BaseParser) -> None:
-        """
-        Backward compatibility wrapper for registering a new parser.
-        """
         self.register_parser(parser)
-
-    def _get_sorted_items(self) -> List[Dict[str, Any]]:
-        """
-        Return internal registry items sorted deterministically by priority.
-        """
-        return sorted(
-            self._registry.values(),
-            key=lambda x: (x["priority"], x["parser"].name),
-        )

@@ -16,7 +16,7 @@ class TestMultiFormatIngestion(unittest.TestCase):
 
     def test_supported_formats(self):
         formats = self.manager.supported_formats()
-        expected = ["json", "cef", "leef", "syslog", "xml", "csv"]
+        expected = ["json", "aws_cloudtrail", "cisco_asa", "windows_event", "cef", "leef", "syslog", "xml", "csv"]
         self.assertEqual(formats, expected)
 
     def test_pipeline_syslog(self):
@@ -70,7 +70,7 @@ class TestMultiFormatIngestion(unittest.TestCase):
     def test_pipeline_unknown(self):
         log = "UNSTRUCTURED_LOG_MESSAGE_12345"
         res = self.manager.process_log(log)
-        self.assertEqual(res["event"]["parser"], "unknown")
+        self.assertIsNone(res["event"]["parser"])
         self.assertEqual(res["event"]["raw_event"], log)
         self.assertTrue(res["integrity"]["verified"])
 

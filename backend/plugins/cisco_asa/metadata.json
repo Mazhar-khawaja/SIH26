@@ -1,0 +1,9 @@
+{
+  "name": "cisco_asa",
+  "version": "1.0.0",
+  "description": "Parses Cisco ASA Syslog format logs",
+  "vendor": "Cisco",
+  "supported_formats": ["syslog", "cisco_asa"],
+  "priority": 15,
+  "enabled": true
+}

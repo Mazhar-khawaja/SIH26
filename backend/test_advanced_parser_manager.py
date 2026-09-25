@@ -41,7 +41,7 @@ class TestAdvancedParserManager(unittest.TestCase):
 
     def test_default_registered_parsers(self):
         supported = self.manager.list_parsers()
-        expected = ["json", "cef", "leef", "syslog", "xml", "csv"]
+        expected = ["json", "aws_cloudtrail", "cisco_asa", "windows_event", "cef", "leef", "syslog", "xml", "csv"]
         self.assertEqual(supported, expected)
 
     def test_register_parser(self):

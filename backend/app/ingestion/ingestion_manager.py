@@ -54,6 +54,15 @@ class IngestionManager:
             parsed_data.get("parser"),
             parsed_data.get("raw_event", log),
         )
+
+        if parsed_data.get("parser") is None:
+            if not hasattr(self, "intelligence_service"):
+                from app.intelligence.service import IntelligenceService
+                self.intelligence_service = IntelligenceService()
+
+            ai_res = self.intelligence_service.classify_log(log)
+            format_result["intelligence"] = ai_res.model_dump()
+
         parsed_data["extracted_data"] = format_result.get("extracted_data", {})
 
         # 3. Normalize into Universal Event Schema
@@ -66,34 +75,45 @@ class IngestionManager:
             event["raw_event"]
         )
 
-        # 5. Get the previous event's chain hash
-        previous_hash = self.database.get_latest_chain_hash() or ""
-
-        # 6. Calculate tamper-evident chain hash
-        chain_hash = self.integrity_checker.calculate_chain_hash(
-            event["raw_event"],
-            previous_hash,
-        )
-
-        # 7. Store integrity information inside the event
-        event["integrity_hash"] = raw_hash
-        event["previous_hash"] = previous_hash or None
-        event["chain_hash"] = chain_hash
-
-        # 8. Check event quality
+        # 5. Check event quality
         quality_result = self.quality_checker.check(event)
 
-        # 9. Store event
-        self.database.save_event(
+        # 6. Store event with concurrency-safe chain hashing
+        prev_h, chain_h = self.database.save_event(
             event=event,
             raw_hash=raw_hash,
             quality=quality_result,
-            previous_hash=previous_hash or None,
-            chain_hash=chain_hash,
             format=format_result,
+            integrity_callback=self.integrity_checker.calculate_chain_hash
         )
 
-        # 10. Verify the newly created hashes
+        # 7. Update event with returned hashes
+        event["integrity_hash"] = raw_hash
+        event["previous_hash"] = prev_h
+        event["chain_hash"] = chain_h
+        previous_hash = prev_h
+        chain_hash = chain_h
+
+        # 8. Index event in OpenSearch
+        if not hasattr(self, "search_service"):
+            from app.search.search_service import SearchService
+            self.search_service = SearchService()
+        self.search_service.index_event(event)
+
+        # 9. Run Analytics
+        analytics_result = None
+        if not hasattr(self, "analytics_service"):
+            from app.analytics.service import AnalyticsService
+            self.analytics_service = AnalyticsService()
+        analytics_result = self.analytics_service.analyze_event(event)
+
+        # 10. Run SIEM Integration
+        if not hasattr(self, "siem_service"):
+            from app.integrations.siem.service import SIEMIntegrationService
+            self.siem_service = SIEMIntegrationService()
+        self.siem_service.forward_event(event, analytics_result)
+
+        # 11. Verify the newly created hashes
         hash_verified = self.integrity_checker.verify_hash(
             event["raw_event"],
             raw_hash,
@@ -101,7 +121,7 @@ class IngestionManager:
 
         chain_verified = self.integrity_checker.verify_chain_hash(
             event["raw_event"],
-            previous_hash,
+            previous_hash or "",
             chain_hash,
         )
 

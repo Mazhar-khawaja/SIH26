@@ -1,0 +1,13 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" />
+    <EventID>4624</EventID>
+    <TimeCreated SystemTime="2026-09-24T10:00:00.0000000Z" />
+    <Computer>SERVER01.local</Computer>
+  </System>
+  <EventData>
+    <Data Name="TargetUserName">Administrator</Data>
+    <Data Name="IpAddress">192.168.1.1</Data>
+    <Data Name="IpPort">12345</Data>
+  </EventData>
+</Event>

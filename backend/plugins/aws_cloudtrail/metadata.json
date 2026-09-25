@@ -1,0 +1,9 @@
+{
+  "name": "aws_cloudtrail",
+  "version": "1.0.0",
+  "description": "Parses AWS CloudTrail JSON logs",
+  "vendor": "AWS",
+  "supported_formats": ["json", "aws_cloudtrail"],
+  "priority": 15,
+  "enabled": true
+}

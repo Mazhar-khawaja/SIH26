@@ -1,4 +1,14 @@
 fastapi
 uvicorn
 pydantic
+pydantic-settings
 python-multipart
+python-dotenv
+httpx
+sqlalchemy
+psycopg2-binary
+pyjwt
+passlib[bcrypt]
+slowapi
+kafka-python-ng
+opensearch-py==3.2.0
