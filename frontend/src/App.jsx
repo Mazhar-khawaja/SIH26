@@ -107,8 +107,8 @@ function App() {
           </div>
 
           <div className="brand-copy">
-            <strong>ULPF</strong>
-            <span>EVENT GENOME</span>
+            <strong>ZELTA</strong>
+            <span>THE ULPF</span>
           </div>
         </div>
 
@@ -215,7 +215,7 @@ function App() {
         <div className="page-content">{renderPage()}</div>
 
         <footer className="app-footer">
-          <span>ULPF // EVENT GENOME</span>
+          <span>ZELTA // THE ULPF</span>
           <span>FORENSIC LOG PRE-PROCESSING SYSTEM</span>
           <span>BUILD P1</span>
         </footer>
