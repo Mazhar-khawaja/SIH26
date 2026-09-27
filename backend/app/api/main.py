@@ -83,7 +83,6 @@ async def log_requests(request: Request, call_next):
 # --- v1 API Routes ---
 
 @app.get("/api/v1/")
-@app.get("/")
 def root() -> Dict[str, str]:
     return {
         "application": settings.app_name,
@@ -94,7 +93,6 @@ def root() -> Dict[str, str]:
 
 
 @app.get("/api/v1/health")
-@app.get("/health")
 def health() -> Dict[str, str]:
     from app.search.opensearch_client import OpenSearchClient
     return {
@@ -110,13 +108,11 @@ def ready() -> Dict[str, str]:
 
 
 @app.get("/api/v1/formats")
-@app.get("/formats")
 def supported_formats() -> Dict[str, Any]:
     return {"supported_formats": manager.supported_formats()}
 
 
 @app.post("/api/v1/events")
-@app.post("/events")
 @limiter.limit(settings.rate_limit)
 def process_event(request: Request, payload: LogRequest, user: dict = Depends(allow_analyst)) -> Dict[str, Any]:
     start_time = time.time()
@@ -165,7 +161,6 @@ def process_bulk_events(request: Request, payload: BulkLogRequest, user: dict = 
         raise HTTPException(status_code=500, detail="Failed to enqueue events")
 
 @app.get("/api/v1/events")
-@app.get("/events")
 def get_events(user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
     events = manager.get_all_events()
     return {"count": len(events), "events": events}
@@ -197,7 +192,6 @@ def search_events(
 
 
 @app.get("/api/v1/events/{event_id}")
-@app.get("/events/{event_id}")
 def get_event(event_id: str, user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
     event = manager.get_event(event_id)
     if event is None:
@@ -242,7 +236,6 @@ def get_analytics_stats(user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
 
 
 @app.get("/api/v1/events/{event_id}/verify")
-@app.get("/events/{event_id}/verify")
 def verify_event(event_id: str, user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
     result = manager.verify_event(event_id)
     if result is None:
@@ -251,7 +244,6 @@ def verify_event(event_id: str, user: dict = Depends(allow_viewer)) -> Dict[str,
 
 
 @app.get("/api/v1/stats")
-@app.get("/stats")
 def get_stats(user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
     return {
         "total_events": manager.count_events(),
@@ -347,7 +339,6 @@ def siem_disable(user: dict = Depends(allow_admin)) -> Dict[str, Any]:
 
 
 @app.post("/api/v1/upload")
-@app.post("/upload")
 @limiter.limit(settings.upload_rate_limit)
 async def upload_log_file(
     request: Request,
@@ -408,7 +399,6 @@ async def upload_log_file(
 # --- Parser Plugin API Routes ---
 
 @app.get("/api/v1/parsers")
-@app.get("/parsers")
 def list_parsers(user: dict = Depends(allow_viewer)) -> Dict[str, Any]:
     return {"parsers": manager.parser_manager.list_all_parsers()}
 

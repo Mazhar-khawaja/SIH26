@@ -18,7 +18,8 @@ class Database:
         url = database_url or settings.database_url
         if database_path:
             if database_path.startswith("sqlite://") or database_path.startswith("postgresql://"):
-                url = database_path
+                # Force psycopg2 for SQLAlchemy 2.0+ compatibility
+                url = database_path.replace("postgresql://", "postgresql+psycopg2://")
             else:
                 url = f"sqlite:///{database_path}"
 
@@ -31,6 +32,7 @@ class Database:
                 db_path = url.replace("sqlite:///", "")
                 Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
+        url = url.replace("postgresql://", "postgresql+psycopg2://")
         self.engine = create_engine(url, connect_args=connect_args)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         self._create_tables()
