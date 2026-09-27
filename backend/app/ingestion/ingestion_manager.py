@@ -32,10 +32,16 @@ class IngestionManager:
 
     def __init__(self, database_path: str = "data/ulpf.db") -> None:
         self.parser_manager = ParserManager()
+
         self.normalizer = Normalizer()
         self.integrity_checker = IntegrityChecker()
         self.quality_checker = QualityChecker()
-        self.unknown_detector = UnknownFormatDetector()
+
+        self.unknown_detector = UnknownFormatDetector(
+    self.parser_manager.list_parsers()
+)
+
+             
         self.database = Database(database_path)
 
     def process_log(self, log: str) -> Dict[str, Any]:

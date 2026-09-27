@@ -49,6 +49,86 @@ def supported_formats() -> Dict[str, Any]:
     return {
         "supported_formats": manager.supported_formats(),
     }
+@app.get("/parsers")
+def list_parsers() -> Dict[str, Any]:
+    """
+    Return metadata for all registered parsers.
+    """
+    return {
+        "parsers": manager.parser_manager.list_all_parsers(),
+    }
+
+
+@app.get("/parsers/{parser_name}")
+def get_parser(parser_name: str) -> Dict[str, Any]:
+    """
+    Return metadata for a specific parser.
+    """
+    info = manager.parser_manager.get_parser_info(parser_name)
+
+    if info is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Parser '{parser_name}' not found",
+        )
+
+    return {
+        "name": info["name"],
+        "enabled": info["enabled"],
+        "priority": info["priority"],
+    }
+
+
+@app.post("/parsers/{parser_name}/enable")
+def enable_parser(parser_name: str) -> Dict[str, Any]:
+    """
+    Enable a registered parser.
+    """
+    try:
+        manager.parser_manager.enable_parser(parser_name)
+
+    except KeyError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+
+    info = manager.parser_manager.get_parser_info(parser_name)
+
+    return {
+    "message": f"Parser '{parser_name}' enabled",
+    "parser": {
+        "name": info["name"],
+        "enabled": info["enabled"],
+        "priority": info["priority"],
+    },
+}
+
+
+@app.post("/parsers/{parser_name}/disable")
+def disable_parser(parser_name: str) -> Dict[str, Any]:
+    """
+    Disable a registered parser.
+    """
+    try:
+        manager.parser_manager.disable_parser(parser_name)
+
+    except KeyError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        ) from error
+
+    info = manager.parser_manager.get_parser_info(parser_name)
+
+    return {
+    "message": f"Parser '{parser_name}' disabled",
+    "parser": {
+        "name": info["name"],
+        "enabled": info["enabled"],
+        "priority": info["priority"],
+    },
+}
 
 
 @app.post("/events")
