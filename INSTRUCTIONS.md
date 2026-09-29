@@ -12,35 +12,19 @@ Ensure you have the following installed on your machine:
 
 ### 1.2 Start Backend Infrastructure
 1. Open a terminal and navigate to the project root directory (`SIH26`).
-2. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-3. Build and launch all backend services (PostgreSQL, Kafka, OpenSearch, FastAPI, Worker):
+2. Build and launch all backend and frontend services via Docker Compose:
    ```bash
    docker compose up --build -d
    ```
-4. Verify the containers are healthy. You can run `docker compose ps` and wait until `postgres`, `kafka`, and `opensearch` report as `healthy` or `running`.
-
-### 1.3 Start the Frontend UI
-1. Open a new terminal window/tab.
-2. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-3. Install dependencies and start the Vite dev server:
-   ```bash
-   npm install
-   npm run dev
-   ```
-4. The frontend will be accessible at `http://localhost:5173`.
+3. Verify the containers are healthy. You can run `docker compose ps` and wait until `postgres`, `kafka`, and `opensearch` report as `healthy` or `running`.
+4. The complete ULPF application (Frontend + API) is now accessible at `http://localhost:8000`.
 
 ---
 
 ## 2. Demonstration Procedure
 
 ### Step 1: Explore the Dashboard
-1. Open `http://localhost:5173` in a web browser.
+1. Open `http://localhost:8000` in a web browser.
 2. The main dashboard displays an overview of ingested events, analytics stats, and system health.
 
 ### Step 2: Submit a Log (Parsing & UES)

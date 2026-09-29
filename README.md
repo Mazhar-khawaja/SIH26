@@ -113,7 +113,7 @@ npm run dev
 
 ## 🧪 Quick Demonstration
 
-1. Open the dashboard at `http://localhost:5173`.
+1. Open the dashboard at `http://localhost:8000`.
 2. Go to the **Submit Log** interface.
 3. Paste a sample raw log (e.g., a Cisco ASA syslog snippet).
 4. Watch ULPF instantly identify the log type, normalize it into the UES format, and compute the associated risk score and intelligence.
