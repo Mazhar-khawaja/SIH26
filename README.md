@@ -14,7 +14,7 @@
 | | |
 |---|---|
 | **SIH** | Smart India Hackathon 2026 |
-| **PSID** | 260156 |
+| **PSID** | 26156 |
 | **Type** | Local / Docker-based |
 | **Status** | Prototype / Working Implementation |
 
