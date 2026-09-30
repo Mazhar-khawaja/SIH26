@@ -18,14 +18,18 @@ const DEFAULT_RAW_LOG =
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") {
-    return "—";
+    return "N/A";
+  }
+
+  if (typeof value === "string" && value.trim() === "") {
+    return "N/A";
   }
 
   if (typeof value === "object") {
     try {
       return JSON.stringify(value);
     } catch {
-      return "—";
+      return "N/A";
     }
   }
 
@@ -122,11 +126,11 @@ function getParser(event) {
     return (
       event.parser.name ||
       event.parser.parser_name ||
-      "—"
+      "N/A"
     );
   }
 
-  return "—";
+  return "N/A";
 }
 
 function getFormat(event) {
@@ -138,10 +142,10 @@ function getFormat(event) {
     event?.format &&
     typeof event.format === "object"
   ) {
-    return event.format.format || "—";
+    return event.format.format || "N/A";
   }
 
-  return "—";
+  return "N/A";
 }
 
 function ProcessEngine() {
@@ -194,9 +198,7 @@ function ProcessEngine() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            raw_event: rawLog,
             log: rawLog,
-            raw_log: rawLog,
           }),
         }
       );
@@ -692,7 +694,7 @@ function ProcessEngine() {
                   value={
                     quality !== null
                       ? `${quality}%`
-                      : "—"
+                      : "N/A"
                   }
                 />
 
@@ -701,7 +703,7 @@ function ProcessEngine() {
                   value={
                     confidence !== null
                       ? `${confidence}%`
-                      : "—"
+                      : "N/A"
                   }
                 />
 

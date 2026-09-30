@@ -7,10 +7,13 @@ function Parsers() {
   const [parsers, setParsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionLoading, setActionLoading] = useState(null);
+  const [actionStatus, setActionStatus] = useState(null);
 
   async function loadParsers() {
     setLoading(true);
     setError("");
+    setActionStatus(null);
 
     try {
       const response = await fetch(`${API_BASE}/parsers`);
@@ -35,6 +38,50 @@ function Parsers() {
   useEffect(() => {
     loadParsers();
   }, []);
+
+  const toggleParser = async (parser) => {
+    if (parser.enabled) {
+      if (!window.confirm(`Disable ${parser.name.toUpperCase()} parser?`)) {
+        return;
+      }
+    }
+
+    setActionLoading(parser.name);
+    setActionStatus(null);
+    setError("");
+
+    try {
+      const endpoint = parser.enabled ? "disable" : "enable";
+      const response = await fetch(`${API_BASE}/parsers/${parser.name}/${endpoint}`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        let msg = `Failed to ${endpoint} parser.`;
+        try {
+          const body = await response.json();
+          if (body.detail) {
+            msg = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail);
+          }
+        } catch(e) {}
+        throw new Error(msg);
+      }
+
+      setActionStatus({
+        type: "success",
+        message: `Successfully ${endpoint}d ${parser.name.toUpperCase()} parser.`
+      });
+
+      await loadParsers();
+    } catch (err) {
+      setActionStatus({
+        type: "error",
+        message: err.message
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const enabledCount = parsers.filter(
     (parser) => parser.enabled,
@@ -79,6 +126,26 @@ function Parsers() {
           <div>
             <strong>REGISTRY ERROR</strong>
             <p>{error}</p>
+          </div>
+        </div>
+      )}
+
+      {actionStatus && actionStatus.type === "error" && (
+        <div className="parser-error">
+          <span>!</span>
+          <div>
+            <strong>ACTION FAILED</strong>
+            <p>{actionStatus.message}</p>
+          </div>
+        </div>
+      )}
+
+      {actionStatus && actionStatus.type === "success" && (
+        <div className="parser-success">
+          <span>✓</span>
+          <div>
+            <strong>ACTION SUCCESS</strong>
+            <p>{actionStatus.message}</p>
           </div>
         </div>
       )}
@@ -187,6 +254,17 @@ function Parsers() {
                 <div className="parser-contract">
                   <span>CONTRACT</span>
                   <strong>UNIVERSAL EVENT</strong>
+                </div>
+
+                <div className="parser-actions">
+                  <button
+                    type="button"
+                    className={`parser-action-btn ${parser.enabled ? "disable-btn" : "enable-btn"}`}
+                    onClick={() => toggleParser(parser)}
+                    disabled={actionLoading === parser.name || loading}
+                  >
+                    {actionLoading === parser.name ? "WAIT..." : (parser.enabled ? "DISABLE" : "ENABLE")}
+                  </button>
                 </div>
               </article>
             ))

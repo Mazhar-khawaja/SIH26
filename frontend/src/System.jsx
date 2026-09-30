@@ -212,9 +212,9 @@ function System() {
         <div className="system-metric">
           <span>DEPLOYMENT</span>
 
-          <strong>P1</strong>
+          <strong>FINAL</strong>
 
-          <small>Forensic build</small>
+          <small>SIH 2026 BUILD</small>
         </div>
       </section>
 

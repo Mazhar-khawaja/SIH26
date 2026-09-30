@@ -244,7 +244,7 @@
 .parser-row {
   min-height: 105px;
   display: grid;
-  grid-template-columns: 55px minmax(180px, 1.5fr) 100px 150px 170px;
+  grid-template-columns: 55px minmax(180px, 1.5fr) 100px 150px 170px 100px;
   align-items: center;
   gap: 15px;
   padding: 16px 22px;
@@ -384,7 +384,7 @@
 
 @media (max-width: 1050px) {
   .parser-row {
-    grid-template-columns: 45px minmax(160px, 1fr) 80px 120px;
+    grid-template-columns: 45px minmax(160px, 1fr) 80px 120px 100px;
   }
 
   .parser-contract {
@@ -426,12 +426,84 @@
   }
 
   .parser-row {
-    grid-template-columns: 35px minmax(0, 1fr) 110px;
+    grid-template-columns: 35px minmax(0, 1fr) 110px 100px;
   }
 
   .parser-priority {
     display: none;
   }
+}
+
+.parser-action-btn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: var(--text, #f1f2ed);
+  font-family: var(--mono, monospace);
+  font-size: 8px;
+  letter-spacing: .12em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.parser-action-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,.05);
+}
+
+.parser-action-btn.disable-btn {
+  border-color: rgba(255,92,92,.4);
+  color: #ff7777;
+}
+
+.parser-action-btn.disable-btn:hover:not(:disabled) {
+  background: rgba(255,92,92,.08);
+}
+
+.parser-action-btn.enable-btn {
+  border-color: rgba(214,255,63,.4);
+  color: var(--accent, #d6ff3f);
+}
+
+.parser-action-btn.enable-btn:hover:not(:disabled) {
+  background: rgba(214,255,63,.08);
+}
+
+.parser-action-btn:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.parser-success {
+  margin-top: 12px;
+  padding: 15px;
+  display: flex;
+  gap: 12px;
+  border: 1px solid rgba(214,255,63,.3);
+  background: rgba(214,255,63,.045);
+}
+
+.parser-success > span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(214,255,63,.45);
+  color: var(--accent, #d6ff3f);
+  font-family: var(--mono, monospace);
+}
+
+.parser-success strong {
+  font-family: var(--mono, monospace);
+  font-size: 9px;
+  letter-spacing: .13em;
+  color: var(--accent, #d6ff3f);
+}
+
+.parser-success p {
+  margin: 6px 0 0;
+  color: var(--muted, #81858d);
+  font-size: 12px;
 }
 
 @media (max-width: 560px) {

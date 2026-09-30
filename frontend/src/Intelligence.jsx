@@ -126,6 +126,7 @@ function Intelligence() {
           extracted_data: {},
           field_mapping_suggestions: mappingDict,
           reasons: classifyData.reasons || [],
+          suggested_parser: classifyData.suggested_parser || null,
         }
       });
     } catch (analysisError) {
@@ -351,9 +352,9 @@ function Intelligence() {
                   </strong>
 
                   <p>
-                    {format.message ||
-                      format.reason ||
-                      "ULPF completed format analysis."}
+                    {detectedFormat === "unknown" 
+                      ? "No recognized parser pattern was detected for this input."
+                      : "ULPF completed format analysis."}
                   </p>
                 </div>
               </div>
@@ -370,6 +371,7 @@ function Intelligence() {
                   <span>PARSER</span>
                   <strong>
                     {formatLabel(
+                      format.suggested_parser?.name ||
                       result?.event?.parser ||
                         "NO PARSER",
                     )}
@@ -392,54 +394,39 @@ function Intelligence() {
               </div>
 
               <div className="intelligence-reason">
-                <span>DETECTION REASON</span>
+                <span>WHY THIS FORMAT WAS DETECTED</span>
 
-                <p>
-                  {format.reason ||
-                    format.message ||
-                    "No additional explanation supplied by the parser engine."}
-                </p>
+                {format.reasons && format.reasons.length > 0 ? (
+                  <ul>
+                    {format.reasons.map((reason, idx) => (
+                      <li key={idx}><p>{reason}</p></li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No explanatory evidence was returned by the intelligence engine.</p>
+                )}
               </div>
 
               {candidates.length > 0 && (
                 <div className="intelligence-section">
                   <div className="intelligence-section-title">
                     <span>01</span>
-                    <strong>FORMAT CANDIDATES</strong>
+                    <strong>MATCHED PATTERNS</strong>
                   </div>
 
                   <div className="candidate-list">
                     {candidates.map((candidate, index) => (
                       <div
                         className="candidate-row"
-                        key={`${candidate.format || "candidate"}-${index}`}
+                        key={`${candidate}-${index}`}
                       >
                         <span>
                           {String(index + 1).padStart(2, "0")}
                         </span>
 
                         <strong>
-                          {formatLabel(candidate.format)}
+                          {String(candidate).toUpperCase()}
                         </strong>
-
-                        <div className="candidate-confidence">
-                          <i
-                            style={{
-                              width: `${confidencePercent(
-                                candidate.confidence,
-                              )}%`,
-                            }}
-                          />
-
-                          <span>
-                            {Math.round(
-                              confidencePercent(
-                                candidate.confidence,
-                              ),
-                            )}
-                            %
-                          </span>
-                        </div>
                       </div>
                     ))}
                   </div>

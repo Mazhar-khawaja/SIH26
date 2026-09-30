@@ -168,7 +168,7 @@ function App() {
             </div>
           </div>
 
-          <span className="sidebar-version">P1 / FORENSIC BUILD</span>
+          <span className="sidebar-version">FINAL / SIH 2026</span>
         </div>
       </aside>
 
@@ -184,7 +184,7 @@ function App() {
             <div className="top-bar-meta">
               <span>SIH 2026</span>
               <span className="meta-divider" />
-              <span>ULPF / P1</span>
+              <span>ULPF</span>
             </div>
 
             <button
@@ -217,7 +217,7 @@ function App() {
         <footer className="app-footer">
           <span>ZELTA // THE ULPF</span>
           <span>FORENSIC LOG PRE-PROCESSING SYSTEM</span>
-          <span>BUILD P1</span>
+          <span>FINAL BUILD</span>
         </footer>
       </main>
     </div>
