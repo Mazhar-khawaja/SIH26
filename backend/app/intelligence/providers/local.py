@@ -97,6 +97,15 @@ class LocalProvider(AIProvider):
                 "patterns": ["csv_delimiters"]
             })
 
+        # 7. Generic Key/Value
+        kv_matches = list(re.finditer(r"(?:^|[|\s,])([A-Za-z_][A-Za-z0-9_-]*)[=:]([^|\s,]+)", log))
+        if len(kv_matches) >= 3 and not any(c["format"] in ["json", "xml", "cef", "leef"] for c in candidates):
+            candidates.append({
+                "format": "unknown", "confidence": min(0.8, 0.2 + (len(kv_matches) * 0.1)),
+                "reasons": [f"Detected generic key-value structure with {len(kv_matches)} fields"],
+                "patterns": ["generic_kv"]
+            })
+
         if not candidates:
             return ClassificationResult(
                 format="unknown",
@@ -129,7 +138,7 @@ class LocalProvider(AIProvider):
     def suggest_field_mapping(self, log: str, format_hint: str) -> List[FieldMappingSuggestion]:
         # Extract generic kv
         extracted = {}
-        for key, value in re.findall(r"(?:^|[|\s])([A-Za-z_][A-Za-z0-9_-]*)=([^|\s]+)", log.strip()):
+        for key, value in re.findall(r"(?:^|[|\s,])([A-Za-z_][A-Za-z0-9_-]*)[=:]([^|\s,]+)", log.strip()):
             extracted[key.lower()] = value
 
         if format_hint == "json":
@@ -145,10 +154,10 @@ class LocalProvider(AIProvider):
 
         # Universal Event Schema targets
         targets = {
-            "source_ip": ["src", "src_ip", "sourceaddress", "clientip", "sip"],
-            "destination_ip": ["dst", "dst_ip", "destinationaddress", "serverip", "dip"],
+            "source_ip": ["src", "src_ip", "sourceaddress", "clientip", "sip", "source"],
+            "destination_ip": ["dst", "dst_ip", "destinationaddress", "serverip", "dip", "dest"],
             "source_port": ["spt", "src_port", "sourceport", "sport"],
-            "destination_port": ["dpt", "dst_port", "destinationport", "dport"],
+            "destination_port": ["dpt", "dst_port", "destinationport", "dport", "port"],
             "protocol": ["proto", "protocol"],
             "action": ["act", "action", "status", "outcome"],
             "user": ["usr", "user", "username", "account"],
