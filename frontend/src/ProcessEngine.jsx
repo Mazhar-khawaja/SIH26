@@ -3,16 +3,6 @@ import "./ProcessEngine.css";
 
 const API_BASE = "/api/v1";
 
-const PROCESSING_PHASES = [
-  "INGESTING RAW SIGNAL",
-  "DETECTING EVENT FORMAT",
-  "SELECTING PARSER",
-  "EXTRACTING EVENT FIELDS",
-  "NORMALIZING EVENT",
-  "EVALUATING QUALITY",
-  "FINALIZING EVENT GENOME",
-];
-
 const DEFAULT_RAW_LOG =
   "<134>Sep 14 21:45:32 FIREWALL01 DENY src=10.10.20.15 dst=8.8.8.8 sport=51524 dport=443 proto=TCP severity=HIGH";
 
@@ -151,32 +141,9 @@ function getFormat(event) {
 function ProcessEngine() {
   const [rawLog, setRawLog] = useState(DEFAULT_RAW_LOG);
   const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [phaseIndex, setPhaseIndex] = useState(-1);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [showRaw, setShowRaw] = useState(false);
-
-  useEffect(() => {
-    if (!processing) {
-      return undefined;
-    }
-
-    const timer = setInterval(() => {
-      setProgress((current) =>
-        Math.min(current + 4, 92)
-      );
-
-      setPhaseIndex((current) =>
-        Math.min(
-          current + 1,
-          PROCESSING_PHASES.length - 1
-        )
-      );
-    }, 420);
-
-    return () => clearInterval(timer);
-  }, [processing]);
 
   const processEvent = async () => {
     if (!rawLog.trim() || processing) {
@@ -186,8 +153,6 @@ function ProcessEngine() {
     setProcessing(true);
     setError("");
     setResult(null);
-    setProgress(4);
-    setPhaseIndex(0);
 
     try {
       const response = await fetch(
@@ -224,15 +189,8 @@ function ProcessEngine() {
 
       const responseData = await response.json();
 
-      setProgress(100);
-      setPhaseIndex(
-        PROCESSING_PHASES.length - 1
-      );
-
-      setTimeout(() => {
-        setResult(getEventPayload(responseData));
-        setProcessing(false);
-      }, 350);
+      setResult(getEventPayload(responseData));
+      setProcessing(false);
     } catch (requestError) {
       console.error(requestError);
 
@@ -242,8 +200,6 @@ function ProcessEngine() {
       );
 
       setProcessing(false);
-      setProgress(0);
-      setPhaseIndex(-1);
     }
   };
 
@@ -252,8 +208,6 @@ function ProcessEngine() {
     setResult(null);
     setError("");
     setProcessing(false);
-    setProgress(0);
-    setPhaseIndex(-1);
     setShowRaw(false);
   };
 
@@ -261,8 +215,6 @@ function ProcessEngine() {
     setRawLog(DEFAULT_RAW_LOG);
     setResult(null);
     setError("");
-    setProgress(0);
-    setPhaseIndex(-1);
     setShowRaw(false);
   };
 
@@ -274,12 +226,13 @@ function ProcessEngine() {
   const confidence = getConfidence(event);
   const fieldCount = getFieldCount(event);
 
-  const currentActivity =
-    phaseIndex >= 0
-      ? PROCESSING_PHASES[phaseIndex]
-      : result
-      ? "UNIVERSAL EVENT SCHEMA READY"
-      : "AWAITING RAW SIGNAL";
+  const currentActivity = processing
+    ? "PROCESSING SIGNAL"
+    : result
+    ? "COMPLETE"
+    : error
+    ? "FAILED"
+    : "IDLE";
 
   const schemaGroups = useMemo(
     () => [
@@ -413,17 +366,21 @@ function ProcessEngine() {
         <div className="analysis-progress">
 
           <div
-            className="progress-ring"
+            className={`progress-ring ${processing ? "is-processing" : ""}`}
             style={{
-              "--progress-angle":
-                `${progress * 3.6}deg`,
+              "--progress-angle": processing ? "360deg" : result ? "360deg" : "0deg",
             }}
           >
             <div className="progress-ring-core">
 
               <strong>
-                {progress}
-                <small>%</small>
+                {processing
+                  ? "◌"
+                  : result
+                  ? "✓"
+                  : error
+                  ? "!"
+                  : "—"}
               </strong>
 
               <span>
@@ -431,7 +388,9 @@ function ProcessEngine() {
                   ? "COMPLETE"
                   : processing
                   ? "PROCESSING"
-                  : "READY"}
+                  : error
+                  ? "FAILED"
+                  : "IDLE"}
               </span>
 
             </div>
@@ -439,7 +398,7 @@ function ProcessEngine() {
 
           <div className="progress-context">
 
-            <span>CURRENT ACTIVITY</span>
+            <span>REQUEST STATE</span>
 
             <strong>
               {currentActivity}
