@@ -362,24 +362,61 @@ async def upload_log_file(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File must be UTF-8 encoded text")
 
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if not lines:
+    lines = text.splitlines(keepends=True)
+    if not any(line.strip() for line in lines):
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
     processed = []
     failed = []
 
     start_time = time.time()
+    
+    import re
+    def looks_like_event_start(line: str) -> bool:
+        s = line.strip()
+        if not s:
+            return False
+        if s.startswith(("{", "<", "[", "CEF:", "LEEF:")):
+            return True
+        if re.match(r"^\d{4}-\d{2}-\d{2}", s):
+            return True
+        if re.match(r"^[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}", s):
+            return True
+        return False
+
+    current_event = ""
+    event_start_line = 0
+    current_is_multiline_capable = False
+
+    def flush_event():
+        if current_event.strip():
+            try:
+                res = manager.process_log(current_event)
+                processed.append({"line": event_start_line, "result": res})
+            except Exception as err:
+                failed.append({"line": event_start_line, "error": str(err), "raw_event": current_event})
+
     for line_number, line in enumerate(lines, start=1):
-        try:
-            result = manager.process_log(line)
-            processed.append({"line": line_number, "result": result})
-        except Exception as error:
-            failed.append({"line": line_number, "error": str(error), "raw_event": line})
+        if not line.strip():
+            if current_event:
+                current_event += line
+            continue
+
+        is_start = looks_like_event_start(line)
+        
+        if is_start or not current_event or not current_is_multiline_capable:
+            flush_event()
+            current_event = line
+            event_start_line = line_number
+            current_is_multiline_capable = is_start
+        else:
+            current_event += line
+
+    flush_event()
 
     process_time = (time.time() - start_time) * 1000
     logger.info(
-        f"Processed batch upload of {len(lines)} lines",
+        f"Processed batch upload of {len(processed) + len(failed)} events from {len(lines)} lines",
         processed_count=len(processed),
         failed_count=len(failed),
         processing_time_ms=f"{process_time:.2f}",

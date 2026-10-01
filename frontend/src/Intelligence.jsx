@@ -153,7 +153,7 @@ function Intelligence() {
 
   const confidence = confidencePercent(
     format.confidence ??
-      result?.event?.quality_score / 100 ??
+      result?.event?.confidence ??
       0,
   );
 

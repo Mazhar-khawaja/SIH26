@@ -61,14 +61,15 @@ class IngestionManager:
                 self.intelligence_service = IntelligenceService()
 
             ai_res = self.intelligence_service.classify_log(log)
-            format_result["intelligence"] = ai_res.model_dump()
+            format_result["intelligence"] = ai_res.model_dump(mode="json")
+            parsed_data["confidence"] = ai_res.confidence
 
         parsed_data["extracted_data"] = format_result.get("extracted_data", {})
 
         # 3. Normalize into Universal Event Schema
         normalized_event = self.normalizer.normalize(parsed_data)
 
-        event = normalized_event.model_dump()
+        event = normalized_event.model_dump(mode="json")
 
         # 4. Calculate SHA-256 hash of the exact raw event
         raw_hash = self.integrity_checker.calculate_hash(
@@ -77,6 +78,12 @@ class IngestionManager:
 
         # 5. Check event quality
         quality_result = self.quality_checker.check(event)
+        event["quality_score"] = quality_result["quality_score"]
+
+        # Calculate Normalized Hash AFTER quality and confidence are set
+        event["hash_version"] = 2
+        normalized_hash = self.integrity_checker.calculate_normalized_hash(event)
+        event["normalized_hash"] = normalized_hash
 
         # 6. Store event with concurrency-safe chain hashing
         prev_h, chain_h = self.database.save_event(
@@ -119,6 +126,11 @@ class IngestionManager:
             raw_hash,
         )
 
+        normalized_verified = self.integrity_checker.verify_normalized_hash(
+            event,
+            normalized_hash,
+        )
+
         chain_verified = self.integrity_checker.verify_chain_hash(
             event["raw_event"],
             previous_hash or "",
@@ -130,9 +142,12 @@ class IngestionManager:
             "event": event,
             "integrity": {
                 "sha256": raw_hash,
+                "normalized_hash": normalized_hash,
+                "hash_version": 2,
                 "previous_hash": previous_hash or None,
                 "chain_hash": chain_hash,
                 "verified": hash_verified,
+                "normalized_verified": normalized_verified,
                 "chain_verified": chain_verified,
             },
             "quality": quality_result,
@@ -151,16 +166,25 @@ class IngestionManager:
 
         raw_event = event.get("raw_event", "")
         raw_hash = event.get("raw_hash")
+        normalized_hash = event.get("normalized_hash")
+        hash_version = event.get("hash_version", 1)
         previous_hash = event.get("previous_hash") or ""
         chain_hash = event.get("chain_hash")
 
         hash_verified = False
+        normalized_verified = True
         chain_verified = False
 
         if raw_hash:
             hash_verified = self.integrity_checker.verify_hash(
                 raw_event,
                 raw_hash,
+            )
+
+        if hash_version >= 2 and normalized_hash:
+            normalized_verified = self.integrity_checker.verify_normalized_hash(
+                event,
+                normalized_hash,
             )
 
         if chain_hash:
@@ -170,16 +194,19 @@ class IngestionManager:
                 chain_hash,
             )
 
+        tamper_detected = not (hash_verified and normalized_verified and chain_verified)
+
         return {
             "event_id": event_id,
             "integrity_hash": raw_hash,
+            "normalized_hash": normalized_hash,
+            "hash_version": hash_version,
             "previous_hash": previous_hash or None,
             "chain_hash": chain_hash,
             "hash_verified": hash_verified,
+            "normalized_verified": normalized_verified,
             "chain_verified": chain_verified,
-            "tamper_detected": not (
-                hash_verified and chain_verified
-            ),
+            "tamper_detected": tamper_detected,
         }
 
     def supported_formats(self) -> list[str]:

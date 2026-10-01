@@ -21,9 +21,11 @@ class ParserManager:
     enable/disable states, and unknown format handling.
     """
 
-    def __init__(self, plugins_dir: str = "plugins") -> None:
+    def __init__(self, plugins_dir: str = None) -> None:
         self.registry = PluginRegistry()
-        self.plugins_dir = plugins_dir
+        if plugins_dir is None:
+            plugins_dir = os.path.join(os.path.dirname(__file__), "..", "..", "plugins")
+        self.plugins_dir = os.path.abspath(plugins_dir)
 
         # Register default supported parsers with deterministic priorities
         self.register_parser(JSONParser(), priority=10)
@@ -124,20 +126,23 @@ class ParserManager:
         if not log or not log.strip():
             raise ValueError("Log cannot be empty")
 
-        log = log.strip()
-        parser = self.detect_parser(log)
+        raw_log = log
+        parse_input = log.strip()
+        parser = self.detect_parser(parse_input)
 
         if parser is None:
             return {
                 "source_type": "unknown",
-                "raw_event": log,
+                "raw_event": raw_log,
                 "parser": None,
                 "parse_status": "unknown",
+                "confidence": 0.0,
             }
 
         try:
-            result = parser.parse(log)
+            result = parser.parse(parse_input)
             result["parser"] = parser.name
+            result["raw_event"] = raw_log
 
             # Attach parser version if from a plugin
             item = self.registry.get(parser.name)
@@ -145,16 +150,19 @@ class ParserManager:
                 result["parser_version"] = item["metadata"].version
 
             result["parse_status"] = "success"
+            if "confidence" not in result:
+                result["confidence"] = 1.0
             return result
         except Exception as error:
             logger.warning(f"Parser '{parser.name}' failed to parse log: {error}")
             self.registry.mark_unhealthy(parser.name, str(error))
             return {
                 "source_type": "unknown",
-                "raw_event": log,
+                "raw_event": raw_log,
                 "parser": parser.name,
                 "parse_status": "error",
                 "error": str(error),
+                "confidence": 0.0,
             }
 
     def add_parser(self, parser: BaseParser) -> None:

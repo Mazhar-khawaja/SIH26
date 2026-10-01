@@ -83,7 +83,6 @@ class QualityChecker:
         return {
             "status": status,
             "quality_score": score,
-            "confidence": round(score / 100, 2),
             "checks": {
                 "completeness": completeness,
                 "validity": validity,

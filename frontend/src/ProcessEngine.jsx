@@ -57,12 +57,12 @@ function getEventPayload(response) {
 }
 
 function getConfidence(event) {
-  if (event?.format?.confidence !== undefined) {
-    return Math.round(Number(event.format.confidence) * 100);
+  if (event?.confidence !== undefined && event.confidence !== null) {
+    return Math.round(Number(event.confidence) * 100);
   }
 
-  if (event?.quality?.confidence !== undefined) {
-    return Math.round(Number(event.quality.confidence) * 100);
+  if (event?.format?.confidence !== undefined) {
+    return Math.round(Number(event.format.confidence) * 100);
   }
 
   return null;

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, Float
 from sqlalchemy.orm import declarative_base
 from datetime import datetime, timezone
 
@@ -13,6 +13,7 @@ class EventModel(Base):
     source_type = Column(String)
     source_ip = Column(String, index=True)
     source_port = Column(Integer)
+    destination = Column(String)
     destination_ip = Column(String, index=True)
     destination_port = Column(Integer)
     protocol = Column(String)
@@ -25,6 +26,8 @@ class EventModel(Base):
     metadata_fields = Column(String)
 
     raw_hash = Column(String)
+    normalized_hash = Column(String, nullable=True)
+    hash_version = Column(Integer, default=1)
     previous_hash = Column(String)
     chain_hash = Column(String)
 
@@ -43,7 +46,7 @@ class EventModel(Base):
 
     quality_status = Column(String)
     quality_score = Column(Integer)
-    confidence = Column(Integer)
+    confidence = Column(Float)
 
     format = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

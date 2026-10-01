@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from sqlalchemy import create_engine, desc
+from sqlalchemy import create_engine, desc, text
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.storage.models import Base, EventModel, ChainState
@@ -42,6 +42,24 @@ class Database:
         Create tables if they don't exist.
         """
         Base.metadata.create_all(bind=self.engine)
+
+        if self.engine.dialect.name == "sqlite":
+            with self.engine.connect() as conn:
+                # Minimal startup migration for existing SQLite databases
+                result = conn.execute(text("PRAGMA table_info(events)"))
+                existing_columns = {row[1] for row in result.fetchall()}
+                
+                columns_to_check = {
+                    "destination": "VARCHAR",
+                    "normalized_hash": "VARCHAR",
+                    "hash_version": "INTEGER DEFAULT 1",
+                    "previous_hash": "VARCHAR"
+                }
+                
+                for col_name, col_type in columns_to_check.items():
+                    if col_name not in existing_columns:
+                        conn.execute(text(f"ALTER TABLE events ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
 
     def get_session(self) -> Session:
         return self.SessionLocal()
@@ -93,6 +111,7 @@ class Database:
             existing.source_type = event.get("source_type")
             existing.source_ip = event.get("source_ip")
             existing.source_port = event.get("source_port")
+            existing.destination = event.get("destination")
             existing.destination_ip = event.get("destination_ip")
             existing.destination_port = event.get("destination_port")
             existing.protocol = event.get("protocol")
@@ -115,6 +134,8 @@ class Database:
             existing.extensions = json.dumps(event.get("extensions") or {})
             existing.metadata_fields = json.dumps(event.get("metadata") or {})
             existing.raw_hash = raw_hash
+            existing.normalized_hash = event.get("normalized_hash")
+            existing.hash_version = event.get("hash_version", 1)
             existing.previous_hash = previous_hash
             existing.chain_hash = chain_hash
             existing.parser = event.get("parser")
@@ -131,6 +152,12 @@ class Database:
         result = {c.name: getattr(model, c.name) for c in model.__table__.columns}
         if result.get("extracted_data"):
             result["extracted_data"] = json.loads(result["extracted_data"])
+        if result.get("extensions") and isinstance(result["extensions"], str):
+            result["extensions"] = json.loads(result["extensions"])
+        if result.get("metadata_fields") and isinstance(result["metadata_fields"], str):
+            result["metadata"] = json.loads(result["metadata_fields"])
+        elif "metadata_fields" in result:
+            result["metadata"] = result["metadata_fields"]
         # Format created_at to string to match SQLite behaviour in legacy code
         if result.get("created_at"):
             result["created_at"] = result["created_at"].strftime('%Y-%m-%d %H:%M:%S')

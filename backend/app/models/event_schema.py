@@ -46,6 +46,8 @@ class UniversalEvent(BaseModel):
     extracted_data: Dict[str, Any] = Field(default_factory=dict)
 
     integrity_hash: Optional[str] = None
+    normalized_hash: Optional[str] = None
+    hash_version: int = 1
     previous_hash: Optional[str] = None
     chain_hash: Optional[str] = None
 

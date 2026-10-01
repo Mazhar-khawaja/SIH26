@@ -1,6 +1,6 @@
 import hashlib
-
-
+import json
+from typing import Dict, Any
 class IntegrityChecker:
     """
     Provides tamper-evident integrity checks for raw log events.
@@ -25,6 +25,47 @@ class IntegrityChecker:
         """
         actual_hash = IntegrityChecker.calculate_hash(raw_event)
 
+        return actual_hash == expected_hash
+
+    @staticmethod
+    def _canonicalize(event: Dict[str, Any]) -> str:
+        fields_to_protect = [
+            "event_id", "timestamp", "event_type", "source_ip", "destination_ip", 
+            "source_port", "destination_port", "user", "hostname", "application", 
+            "vendor", "product", "category", "severity", "action", "parser", 
+            "parser_version", "quality_score", "confidence", "extensions", "metadata",
+            "source", "source_type", "destination", "protocol", "device"
+        ]
+        
+        payload = {}
+        for key in fields_to_protect:
+            if key in event:
+                payload[key] = event[key]
+                
+        return json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(',', ':'),
+            ensure_ascii=False,
+            default=str
+        )
+
+    @staticmethod
+    def calculate_normalized_hash(event: Dict[str, Any]) -> str:
+        """
+        Calculate SHA-256 hash of the canonical Universal Event.
+        """
+        canonical_str = IntegrityChecker._canonicalize(event)
+        return hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def verify_normalized_hash(event: Dict[str, Any], expected_hash: str) -> bool:
+        """
+        Verify whether the normalized event matches its expected SHA-256 hash.
+        """
+        if not expected_hash:
+            return False
+        actual_hash = IntegrityChecker.calculate_normalized_hash(event)
         return actual_hash == expected_hash
 
     @staticmethod
