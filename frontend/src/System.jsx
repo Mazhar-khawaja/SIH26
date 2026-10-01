@@ -274,7 +274,7 @@ function System() {
             <strong>LOCAL</strong>
 
             <small>
-              Air-gapped compatible architecture
+              Offline-capable runtime architecture
             </small>
           </div>
 
