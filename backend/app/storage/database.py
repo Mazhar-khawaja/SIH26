@@ -43,21 +43,34 @@ class Database:
         """
         Base.metadata.create_all(bind=self.engine)
 
-        if self.engine.dialect.name == "sqlite":
-            with self.engine.connect() as conn:
-                # Minimal startup migration for existing SQLite databases
+        with self.engine.connect() as conn:
+            existing_columns = set()
+            if self.engine.dialect.name == "sqlite":
                 result = conn.execute(text("PRAGMA table_info(events)"))
                 existing_columns = {row[1] for row in result.fetchall()}
-                
-                columns_to_check = {
-                    "destination": "VARCHAR",
-                    "normalized_hash": "VARCHAR",
-                    "hash_version": "INTEGER DEFAULT 1",
-                    "previous_hash": "VARCHAR"
-                }
-                
-                for col_name, col_type in columns_to_check.items():
+            elif self.engine.dialect.name == "postgresql":
+                result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name = 'events'"))
+                existing_columns = {row[0] for row in result.fetchall()}
+
+            if existing_columns:
+                from app.storage.models import EventModel
+                import sqlalchemy
+
+                for col in EventModel.__table__.columns:
+                    col_name = col.name
                     if col_name not in existing_columns:
+                        if isinstance(col.type, sqlalchemy.Integer):
+                            if col_name == "hash_version":
+                                col_type = "INTEGER DEFAULT 1"
+                            else:
+                                col_type = "INTEGER"
+                        elif isinstance(col.type, sqlalchemy.Float):
+                            col_type = "DOUBLE PRECISION" if self.engine.dialect.name == "postgresql" else "FLOAT"
+                        elif isinstance(col.type, sqlalchemy.DateTime):
+                            col_type = "TIMESTAMP"
+                        else:
+                            col_type = "VARCHAR"
+
                         conn.execute(text(f"ALTER TABLE events ADD COLUMN {col_name} {col_type}"))
                 conn.commit()
 
