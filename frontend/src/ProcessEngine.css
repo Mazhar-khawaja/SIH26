@@ -51,28 +51,28 @@
    ========================================================= */
 
 :root[data-theme="light"] .process-engine {
-  --process-bg: #f4f5f7;
+  --process-bg: #f4f6f8;
   --process-panel: #ffffff;
-  --process-panel-soft: #f8f9fa;
+  --process-panel-soft: #f8fafb;
   --process-surface: #ffffff;
   --process-surface-alt: #f1f3f5;
 
-  --process-text: #15181c;
-  --process-text-soft: #4d555f;
-  --process-text-muted: #737c87;
-  --process-text-dim: #9aa2ac;
+  --process-text: #0b111a;
+  --process-text-soft: #3b4654;
+  --process-text-muted: #5a6675;
+  --process-text-dim: #8b96a5;
 
-  --process-border: #dfe3e8;
-  --process-border-strong: #c5ccd4;
+  --process-border: #d4dbe3;
+  --process-border-strong: #a9b5c3;
 
-  --process-accent: #171a1f;
-  --process-accent-soft: rgba(23, 26, 31, 0.055);
+  --process-accent: #0b111a;
+  --process-accent-soft: rgba(11, 17, 26, 0.04);
 
-  --process-success: #53775e;
-  --process-danger: #8b5d5d;
+  --process-success: #297a47;
+  --process-danger: #a43030;
 
   --process-shadow:
-    0 18px 45px rgba(31, 38, 46, 0.08);
+    0 12px 32px rgba(11, 17, 26, 0.04);
 }
 
 
@@ -431,8 +431,8 @@
 
   position: relative;
 
-  width: 178px;
-  height: 178px;
+  width: 110px;
+  height: 110px;
 
   display: grid;
 
@@ -464,7 +464,7 @@
 
   position: absolute;
 
-  inset: 7px;
+  inset: 4px;
 
   border-radius: 50%;
 
@@ -479,7 +479,7 @@
 
   position: absolute;
 
-  inset: 15px;
+  inset: 8px;
 
   border: 1px solid var(--process-border);
 
@@ -526,7 +526,7 @@
 
   font-family: monospace;
 
-  font-size: 42px;
+  font-size: 26px;
 
   line-height: 1;
 
@@ -1180,9 +1180,9 @@
 
   font-size: 9px;
 
-  font-weight: 500;
+  font-weight: 600;
 
-  color: var(--process-text-soft);
+  color: var(--process-text);
 }
 
 
@@ -1742,6 +1742,11 @@
 
 
 .schema-field {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: baseline;
+
   min-width: 0;
 
   padding: 13px 20px;
@@ -1769,7 +1774,7 @@
 .schema-field-key {
   display: block;
 
-  margin-bottom: 6px;
+  margin-bottom: 0;
 
   font-family: monospace;
 
@@ -2092,7 +2097,7 @@
 
   line-height: 1.7;
 
-  color: var(--process-text-soft);
+  color: var(--process-text);
 }
 
 

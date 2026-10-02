@@ -47,15 +47,19 @@ function getEventPayload(response) {
 }
 
 function getConfidence(event) {
+  let val = null;
   if (event?.confidence !== undefined && event.confidence !== null) {
-    return Math.round(Number(event.confidence) * 100);
+    val = Number(event.confidence);
+  } else if (event?.format?.confidence !== undefined && event.format.confidence !== null) {
+    val = Number(event.format.confidence);
   }
-
-  if (event?.format?.confidence !== undefined) {
-    return Math.round(Number(event.format.confidence) * 100);
+  
+  if (val === null || isNaN(val)) return null;
+  
+  if (val <= 1.0) {
+    return Math.round(val * 100);
   }
-
-  return null;
+  return Math.round(val);
 }
 
 function getQuality(event) {
@@ -377,7 +381,7 @@ function ProcessEngine() {
                 {processing
                   ? "◌"
                   : result
-                  ? "✓"
+                  ? (confidence !== null ? `${Math.round(confidence)}%` : "✓")
                   : error
                   ? "!"
                   : "—"}

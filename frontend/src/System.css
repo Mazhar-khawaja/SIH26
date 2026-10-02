@@ -117,7 +117,7 @@
 }
 
 .system-error > span {
-  color: #f0b35a;
+  color: var(--warning);
   font-family: "IBM Plex Mono", monospace;
   font-size: 14px;
 }
@@ -131,7 +131,7 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: #f0b35a;
+  color: var(--warning);
 }
 
 .system-error p {
@@ -144,7 +144,7 @@
 .system-error button {
   border: 1px solid #f0b35a;
   background: transparent;
-  color: #f0b35a;
+  color: var(--warning);
   padding: 9px 12px;
   cursor: pointer;
   font-family: "IBM Plex Mono", monospace;
