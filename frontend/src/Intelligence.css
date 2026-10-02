@@ -8,13 +8,13 @@
 }
 
 .intelligence-header {
-  min-height: 230px;
+  min-height: 160px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 0.42fr);
   gap: 48px;
   align-items: end;
-  padding-bottom: 34px;
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
 
 .intelligence-kicker-row {
@@ -37,7 +37,7 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .intelligence-header h2 {
@@ -47,13 +47,13 @@
   line-height: 0.92;
   letter-spacing: -0.055em;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-header p {
   max-width: 720px;
   margin: 24px 0 0;
-  color: var(--muted);
+  color: var(--text-muted);
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 14px;
   line-height: 1.75;
@@ -66,16 +66,16 @@
   gap: 14px;
   min-width: 190px;
   padding: 16px 18px;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .intelligence-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--muted);
-  box-shadow: 0 0 0 4px var(--line);
+  background: var(--text-muted);
+  box-shadow: 0 0 0 4px var(--border);
 }
 
 .intelligence-status-dot.active {
@@ -97,13 +97,13 @@
 .intelligence-status div > span {
   font-size: 9px;
   letter-spacing: 0.16em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .intelligence-status strong {
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-workspace {
@@ -117,8 +117,8 @@
 .intelligence-result-panel,
 .intelligence-method {
   min-width: 0;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  border: 1px solid var(--border);
+  background: var(--surface);
   box-sizing: border-box;
 }
 
@@ -145,18 +145,18 @@
   font-size: 24px;
   letter-spacing: -0.025em;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-live-tag,
 .detection-badge {
   flex-shrink: 0;
   padding: 7px 9px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .detection-badge.supported {
@@ -165,7 +165,7 @@
 }
 
 .detection-badge.unknown {
-  color: #f0b35a;
+  color: var(--warning);
   border-color: rgba(240, 179, 90, 0.3);
 }
 
@@ -180,7 +180,7 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.16em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .sample-selector > div {
@@ -190,9 +190,9 @@
 }
 
 .sample-selector button {
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   background: transparent;
-  color: var(--muted);
+  color: var(--text-muted);
   padding: 7px 9px;
   cursor: pointer;
   font-family: "IBM Plex Mono", monospace;
@@ -211,13 +211,14 @@
   min-height: 300px;
   resize: vertical;
   box-sizing: border-box;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   outline: none;
-  background: #080a0a;
-  color: var(--text);
+  background: var(--surface-alt);
+  color: var(--text-primary);
   padding: 18px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.7;
 }
 
@@ -237,13 +238,13 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.1em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .analyze-button {
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: #080a0a;
+  color: var(--bg);
   padding: 11px 16px;
   cursor: pointer;
   font-family: "IBM Plex Mono", monospace;
@@ -271,7 +272,7 @@
 }
 
 .intelligence-error > span {
-  color: #f0b35a;
+  color: var(--warning);
   font-family: "IBM Plex Mono", monospace;
 }
 
@@ -279,12 +280,12 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: #f0b35a;
+  color: var(--warning);
 }
 
 .intelligence-error p {
   margin: 6px 0 0;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -303,20 +304,20 @@
   margin-bottom: 20px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 52px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .intelligence-empty strong {
   font-family: "IBM Plex Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-empty p {
   max-width: 420px;
   margin: 12px 0 0;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12px;
   line-height: 1.7;
 }
@@ -327,7 +328,7 @@
   gap: 24px;
   align-items: center;
   padding: 10px 0 26px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .confidence-ring {
@@ -365,13 +366,34 @@
 .confidence-ring strong {
   font-family: "IBM Plex Mono", monospace;
   font-size: 36px;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .confidence-ring span {
   font-family: "IBM Plex Mono", monospace;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
+}
+
+/* Light Mode Override for Confidence Ring */
+[data-theme="light"] .confidence-ring {
+  background:
+    radial-gradient(circle at center, var(--surface-alt) 94%, transparent 95%),
+    conic-gradient(
+      var(--accent) 0deg,
+      var(--accent) calc(var(--confidence, 0.89) * 360deg),
+      var(--border-strong) calc(var(--confidence, 0.89) * 360deg),
+      var(--border-strong) 360deg
+    );
+}
+
+[data-theme="light"] .confidence-ring::after {
+  border-color: var(--border);
+}
+
+[data-theme="light"] .confidence-ring strong {
+  font-size: 28px;
+  font-weight: 600;
 }
 
 .detection-summary {
@@ -382,7 +404,7 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.16em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .detection-summary strong {
@@ -391,13 +413,13 @@
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 34px;
   letter-spacing: -0.04em;
-  color: var(--text);
+  color: var(--text-primary);
   overflow-wrap: anywhere;
 }
 
 .detection-summary p {
   margin: 10px 0 0;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 12px;
   line-height: 1.65;
 }
@@ -405,13 +427,13 @@
 .intelligence-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .intelligence-facts > div {
   min-width: 0;
   padding: 16px 12px;
-  border-right: 1px solid var(--line);
+  border-right: 1px solid var(--border);
 }
 
 .intelligence-facts > div:last-child {
@@ -427,32 +449,33 @@
 .intelligence-facts span {
   font-size: 8px;
   letter-spacing: 0.12em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .intelligence-facts strong {
   margin-top: 7px;
   font-size: 10px;
-  color: var(--text);
+  color: var(--text-primary);
   overflow-wrap: anywhere;
 }
 
 .intelligence-reason {
   padding: 18px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .intelligence-reason > span {
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .intelligence-reason p {
   margin: 8px 0 0;
-  color: var(--text);
-  font-size: 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.65;
 }
 
@@ -477,12 +500,12 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
   letter-spacing: 0.13em;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .candidate-list,
 .mapping-list {
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
 }
 
 .candidate-row,
@@ -492,7 +515,7 @@
   align-items: center;
   gap: 12px;
   padding: 11px 12px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .candidate-row:last-child,
@@ -508,13 +531,13 @@
 .mapping-row > span {
   font-family: "IBM Plex Mono", monospace;
   font-size: 9px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .candidate-row strong {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .candidate-confidence {
@@ -532,7 +555,7 @@
 
 .candidate-confidence {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
 }
 
 .candidate-confidence i {
@@ -546,20 +569,20 @@
   right: 7px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 8px;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .signal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
 }
 
 .signal-cell {
   min-width: 0;
   padding: 11px 12px;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .signal-cell:nth-child(even) {
@@ -574,14 +597,14 @@
 
 .signal-cell span {
   font-size: 8px;
-  color: var(--muted);
+  color: var(--text-muted);
   letter-spacing: 0.08em;
 }
 
 .signal-cell strong {
   margin-top: 5px;
   font-size: 10px;
-  color: var(--text);
+  color: var(--text-primary);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -593,7 +616,7 @@
 .mapping-row strong {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;
-  color: var(--text);
+  color: var(--text-primary);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -608,7 +631,7 @@
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 23px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-method-flow {
@@ -639,19 +662,19 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .intelligence-method-flow > div small {
   margin-top: 7px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 10px;
   line-height: 1.5;
 }
 
 .intelligence-method-flow > i {
   height: 1px;
-  background: var(--line);
+  background: var(--border);
 }
 
 @media (max-width: 1180px) {
@@ -704,7 +727,7 @@
   }
 
   .intelligence-facts > div:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--border);
   }
 
   .intelligence-method-flow {

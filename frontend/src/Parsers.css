@@ -19,14 +19,14 @@
 }
 
 .parsers-header {
-  min-height: 220px;
+  min-height: 160px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 40px;
-  padding: 34px 40px;
-  border: 1px solid var(--line, rgba(255,255,255,.09));
-  background: rgba(255,255,255,.012);
+  padding: 24px 30px;
+  border: 1px solid var(--border);
+  background: var(--surface);
   position: relative;
   overflow: hidden;
 }
@@ -53,7 +53,7 @@
   font-family: var(--mono, monospace);
   font-size: 9px;
   letter-spacing: .14em;
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
 }
 
 .parsers-kicker,
@@ -61,7 +61,7 @@
   font-family: var(--mono, monospace);
   font-size: 9px;
   letter-spacing: .16em;
-  color: var(--muted, #81858d);
+  color: var(--text-muted);
 }
 
 .parsers-header h2 {
@@ -75,7 +75,7 @@
 .parsers-header p {
   max-width: 650px;
   margin: 18px 0 0;
-  color: var(--muted, #81858d);
+  color: var(--text-muted);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -103,7 +103,7 @@
 }
 
 .parser-state-indicator.inactive {
-  background: #565a60;
+  background: var(--surface-alt);
 }
 
 .parser-registry-status div,
@@ -118,7 +118,7 @@
   font-family: var(--mono, monospace);
   font-size: 8px;
   letter-spacing: .14em;
-  color: var(--muted, #81858d);
+  color: var(--text-muted);
 }
 
 .parser-registry-status strong,
@@ -133,13 +133,13 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 14px;
-  border: 1px solid var(--line, rgba(255,255,255,.09));
+  border: 1px solid var(--border);
 }
 
 .overview-block {
   min-height: 100px;
   padding: 20px;
-  border-right: 1px solid var(--line, rgba(255,255,255,.09));
+  border-right: 1px solid var(--border);
 }
 
 .overview-block:last-child {
@@ -149,18 +149,18 @@
 .overview-block span {
   display: block;
   font-family: var(--mono, monospace);
-  font-size: 8px;
-  letter-spacing: .14em;
-  color: #686c73;
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: var(--text-secondary);
 }
 
 .overview-block strong {
   display: block;
   margin-top: 13px;
-  color: var(--text, #f1f2ed);
+  color: var(--text-primary);
   font-family: var(--mono, monospace);
   font-size: 19px;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .parser-error {
@@ -178,7 +178,7 @@
   display: grid;
   place-items: center;
   border: 1px solid rgba(255,92,92,.45);
-  color: #ff7777;
+  color: var(--danger);
   font-family: var(--mono, monospace);
 }
 
@@ -186,20 +186,20 @@
   font-family: var(--mono, monospace);
   font-size: 9px;
   letter-spacing: .13em;
-  color: #ff7777;
+  color: var(--danger);
 }
 
 .parser-error p {
   margin: 6px 0 0;
-  color: var(--muted, #81858d);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .parser-registry,
 .parser-architecture {
   margin-top: 14px;
-  border: 1px solid var(--line, rgba(255,255,255,.09));
-  background: rgba(255,255,255,.012);
+  border: 1px solid var(--border);
+  background: var(--surface);
   overflow: hidden;
 }
 
@@ -210,7 +210,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-bottom: 1px solid var(--line, rgba(255,255,255,.09));
+  border-bottom: 1px solid var(--border);
 }
 
 .parser-section-heading h3,
@@ -225,7 +225,7 @@
   padding: 0 14px;
   border: 1px solid rgba(214,255,63,.28);
   background: transparent;
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
   font-family: var(--mono, monospace);
   font-size: 8px;
   letter-spacing: .12em;
@@ -248,12 +248,12 @@
   align-items: center;
   gap: 15px;
   padding: 16px 22px;
-  border-bottom: 1px solid rgba(255,255,255,.055);
+  border-bottom: 1px solid var(--border);
   transition: background .18s ease;
 }
 
 .parser-row:hover {
-  background: rgba(255,255,255,.022);
+  background: var(--surface-hover);
 }
 
 .parser-row:last-child {
@@ -261,7 +261,7 @@
 }
 
 .parser-number {
-  color: #50545a;
+  color: var(--text-dim);
   font-family: var(--mono, monospace);
   font-size: 10px;
 }
@@ -273,20 +273,20 @@
   font-family: var(--mono, monospace);
   font-size: 7px;
   letter-spacing: .14em;
-  color: #686c73;
+  color: var(--text-muted);
 }
 
 .parser-identity h4 {
   margin: 7px 0 4px;
-  color: var(--text, #f1f2ed);
+  color: var(--text-primary);
   font-family: var(--mono, monospace);
-  font-size: 17px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   letter-spacing: .04em;
 }
 
 .parser-description {
-  color: #676b72;
+  color: var(--text-muted);
   font-size: 10px;
 }
 
@@ -294,10 +294,10 @@
 .parser-contract strong {
   display: block;
   margin-top: 7px;
-  color: #bfc2c7;
+  color: var(--text-primary);
   font-family: var(--mono, monospace);
-  font-size: 10px;
-  font-weight: 400;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .parser-state {
@@ -316,7 +316,7 @@
 }
 
 .parser-empty span {
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
   font-size: 28px;
 }
 
@@ -347,13 +347,13 @@
   flex-direction: column;
   justify-content: center;
   padding: 12px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid var(--border);
 }
 
 .architecture-flow span {
   font-family: var(--mono, monospace);
   font-size: 7px;
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
 }
 
 .architecture-flow strong {
@@ -361,7 +361,7 @@
   font-family: var(--mono, monospace);
   font-size: 9px;
   font-weight: 400;
-  color: #b8bbc0;
+  color: var(--text-secondary);
 }
 
 .architecture-flow i {
@@ -437,9 +437,9 @@
 .parser-action-btn {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid rgba(255,255,255,.2);
+  border: 1px solid var(--border-strong);
   background: transparent;
-  color: var(--text, #f1f2ed);
+  color: var(--text-primary);
   font-family: var(--mono, monospace);
   font-size: 8px;
   letter-spacing: .12em;
@@ -448,12 +448,12 @@
 }
 
 .parser-action-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,.05);
+  background: var(--surface-hover);
 }
 
 .parser-action-btn.disable-btn {
   border-color: rgba(255,92,92,.4);
-  color: #ff7777;
+  color: var(--danger);
 }
 
 .parser-action-btn.disable-btn:hover:not(:disabled) {
@@ -462,7 +462,7 @@
 
 .parser-action-btn.enable-btn {
   border-color: rgba(214,255,63,.4);
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
 }
 
 .parser-action-btn.enable-btn:hover:not(:disabled) {
@@ -489,7 +489,7 @@
   display: grid;
   place-items: center;
   border: 1px solid rgba(214,255,63,.45);
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
   font-family: var(--mono, monospace);
 }
 
@@ -497,12 +497,12 @@
   font-family: var(--mono, monospace);
   font-size: 9px;
   letter-spacing: .13em;
-  color: var(--accent, #d6ff3f);
+  color: var(--accent);
 }
 
 .parser-success p {
   margin: 6px 0 0;
-  color: var(--muted, #81858d);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
